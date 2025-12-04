@@ -25,4 +25,4 @@ jobs:
             npm install
             npm run build
             sudo systemctl reload caddy
-            echo "✓ webWall updated!"
+            echo "✓ webWall updated !"
