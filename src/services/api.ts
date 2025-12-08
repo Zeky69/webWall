@@ -26,6 +26,18 @@ const getHeaders = () => {
   return headers;
 };
 
+const handleResponse = async (response: Response) => {
+  if (response.status === 401) {
+    authToken = null;
+    localStorage.removeItem('wallchange_token');
+    window.location.reload();
+    throw new Error("Unauthorized");
+  }
+  if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
+  if (!response.ok) throw new Error(await response.text());
+  return response;
+};
+
 export const api = {
   setToken: (token: string) => {
     authToken = token;
@@ -58,11 +70,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/list`, {
       headers: getHeaders(),
     });
-    if (response.status === 401) {
-      api.logout();
-      window.location.reload();
-      throw new Error("Unauthorized");
-    }
+    await handleResponse(response);
     return response.json();
   },
 
@@ -70,8 +78,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/send?id=${id}&url=${encodeURIComponent(url)}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -79,8 +86,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/drunk?id=${id}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -93,8 +99,7 @@ export const api = {
       headers: getHeaders(),
       body: formData,
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -106,8 +111,7 @@ export const api = {
       headers: getHeaders(),
       body: formData,
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -119,8 +123,7 @@ export const api = {
       headers: getHeaders(),
       body: formData,
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -128,8 +131,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/update?id=${id}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -137,8 +139,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/key?id=${id}&combo=${encodeURIComponent(combo)}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -146,8 +147,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/uninstall?id=${id}&from=${from}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -155,8 +155,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/reverse?id=${id}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -164,8 +163,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/showdesktop?id=${id}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -173,8 +171,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/marquee?id=${id}&url=${encodeURIComponent(url)}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -182,8 +179,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/particles?id=${id}&url=${encodeURIComponent(url)}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -191,8 +187,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/clones?id=${id}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -200,8 +195,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/faketerminal?id=${id}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -210,8 +204,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/confetti?id=${id}${query}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -219,8 +212,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/spotlight?id=${id}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -229,8 +221,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/textscreen?id=${id}${query}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -238,8 +229,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/wavescreen?id=${id}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -248,8 +238,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/dvdbounce?id=${id}${query}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -257,8 +246,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/api/fireworks?id=${id}`, {
       headers: getHeaders(),
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 
@@ -270,8 +258,7 @@ export const api = {
       headers: getHeaders(),
       body: formData,
     });
-    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
-    if (!response.ok) throw new Error(await response.text());
+    await handleResponse(response);
     return response.text();
   },
 };
