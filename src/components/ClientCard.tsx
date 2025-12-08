@@ -5,11 +5,13 @@ import type { Client } from "../services/api";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { toast } from "sonner";
 import { ClientLogs } from "./ClientLogs";
 import { 
   Monitor, RefreshCw, Upload, Image,
-  Layout, RotateCw, Sparkles, ScrollText, Send, Mouse, Check, Zap, Terminal
+  Layout, RotateCw, Sparkles, ScrollText, Send, Mouse, Check, Zap, Terminal,
+  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2
 } from "lucide-react";
 
 interface ClientCardProps {
@@ -233,10 +235,11 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
         <div className="h-px bg-border/50" />
 
         {/* Actions rapides - style pilules */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 mb-2">
           <button
             onClick={() => handleAction(() => api.showDesktop(clientId), "Bureau")}
             className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg bg-muted/30 hover:bg-primary/10 text-muted-foreground hover:text-primary text-xs font-medium transition-colors"
+            title="Bureau"
           >
             <Layout className="h-3.5 w-3.5" />
             Bureau
@@ -244,25 +247,111 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
           <button
             onClick={() => handleAction(() => api.reverseScreen(clientId), "Inversé")}
             className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg bg-muted/30 hover:bg-primary/10 text-muted-foreground hover:text-primary text-xs font-medium transition-colors"
+            title="Inverser"
           >
             <RotateCw className="h-3.5 w-3.5" />
             Inverser
           </button>
-          <button
-            onClick={() => handleAction(() => api.clones(clientId), "Clones")}
-            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg bg-muted/30 hover:bg-primary/10 text-muted-foreground hover:text-primary text-xs font-medium transition-colors"
-          >
-            <Mouse className="h-3.5 w-3.5" />
-            Clones
-          </button>
-          <button
-            onClick={() => handleAction(() => api.drunk(clientId), "Drunk")}
-            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg bg-muted/30 hover:bg-primary/10 text-muted-foreground hover:text-primary text-xs font-medium transition-colors"
-          >
-            <Zap className="h-3.5 w-3.5" />
-            Drunk
-          </button>
         </div>
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full gap-2 h-9 bg-muted/30 hover:bg-primary/10 border-0 text-muted-foreground hover:text-primary">
+              <Wand2 className="h-4 w-4" />
+              Effects
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Effects for {clientId}</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-3 gap-3 py-4">
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                onClick={() => handleAction(() => api.clones(clientId), "Clones")}
+              >
+                <Mouse className="h-6 w-6" />
+                <span className="text-xs">Clones</span>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                onClick={() => handleAction(() => api.drunk(clientId), "Drunk")}
+              >
+                <Zap className="h-6 w-6" />
+                <span className="text-xs">Drunk</span>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                onClick={() => handleAction(() => api.faketerminal(clientId), "Terminal")}
+              >
+                <Code className="h-6 w-6" />
+                <span className="text-xs">Terminal</span>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                onClick={() => handleAction(() => api.confetti(clientId), "Confetti")}
+              >
+                <PartyPopper className="h-6 w-6" />
+                <span className="text-xs">Confetti</span>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                onClick={() => handleAction(() => api.spotlight(clientId), "Spotlight")}
+              >
+                <Flashlight className="h-6 w-6" />
+                <span className="text-xs">Spotlight</span>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                onClick={() => {
+                  const text = prompt("Texte à afficher :", "HELLO WORLD");
+                  if (text !== null) handleAction(() => api.textscreen(clientId, text), "Text Screen");
+                }}
+              >
+                <Type className="h-6 w-6" />
+                <span className="text-xs">Text</span>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                onClick={() => handleAction(() => api.wavescreen(clientId), "Wave Screen")}
+              >
+                <Waves className="h-6 w-6" />
+                <span className="text-xs">Wave</span>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                onClick={() => handleAction(() => api.dvdbounce(clientId), "DVD Bounce")}
+              >
+                <Disc className="h-6 w-6" />
+                <span className="text-xs">DVD</span>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                onClick={() => handleAction(() => api.fireworks(clientId), "Fireworks")}
+              >
+                <Rocket className="h-6 w-6" />
+                <span className="text-xs">Fireworks</span>
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </Card>
   );

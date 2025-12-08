@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Image as ImageIcon, ScrollText, Send, Upload, X, CheckSquare, Layout, RotateCw, RefreshCw, Sparkles, Mouse, Zap } from "lucide-react";
+import { Image as ImageIcon, ScrollText, Send, Upload, X, CheckSquare, Layout, RotateCw, RefreshCw, Sparkles, Mouse, Zap, Code, PartyPopper, Flashlight, Type, Waves, Disc, Rocket, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface BroadcastBarProps {
@@ -338,6 +338,191 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
     }
   };
 
+  const handleFaketerminal = async () => {
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.faketerminal('*');
+        toast.success(`Fake terminal sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.faketerminal(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`Fake terminal sent to ${successCount} clients`);
+      }
+      onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast fake terminal");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleConfetti = async () => {
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.confetti('*');
+        toast.success(`Confetti sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.confetti(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`Confetti sent to ${successCount} clients`);
+      }
+      onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast confetti");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleSpotlight = async () => {
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.spotlight('*');
+        toast.success(`Spotlight sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.spotlight(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`Spotlight sent to ${successCount} clients`);
+      }
+      onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast spotlight");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleTextscreen = async () => {
+    const text = prompt("Texte à afficher :", "HELLO WORLD");
+    if (text === null) return;
+
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.textscreen('*', text);
+        toast.success(`Textscreen sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.textscreen(clientId, text);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`Textscreen sent to ${successCount} clients`);
+      }
+      onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast textscreen");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleWavescreen = async () => {
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.wavescreen('*');
+        toast.success(`Wavescreen sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.wavescreen(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`Wavescreen sent to ${successCount} clients`);
+      }
+      onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast wavescreen");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleDvdBounce = async () => {
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.dvdbounce('*');
+        toast.success(`DVD Bounce sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.dvdbounce(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`DVD Bounce sent to ${successCount} clients`);
+      }
+      onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast DVD bounce");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleFireworks = async () => {
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.fireworks('*');
+        toast.success(`Fireworks sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.fireworks(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`Fireworks sent to ${successCount} clients`);
+      }
+      onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast fireworks");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
     <>
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-2 bg-foreground/90 backdrop-blur-md text-background rounded-full shadow-2xl animate-in slide-in-from-bottom-10 fade-in duration-300 border border-white/10">
@@ -423,15 +608,16 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
           Clones
         </Button>
 
+        <div className="h-4 w-px bg-background/20 mx-1" />
+
         <Button 
-          variant="ghost" 
+          variant="secondary" 
           size="sm" 
-          className="h-8 text-xs hover:bg-white/10 hover:text-white text-background"
-          onClick={handleDrunk}
-          disabled={isSending}
+          className="h-8 text-xs bg-background text-foreground hover:bg-background/90"
+          onClick={() => { setActiveTab("effects"); setIsDialogOpen(true); }}
         >
-          <Zap className="h-3 w-3 mr-2" />
-          Drunk
+          <Wand2 className="h-3 w-3 mr-2" />
+          Effects
         </Button>
 
         <Button 
@@ -462,10 +648,11 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
           </DialogHeader>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-3">
+            <TabsList className="w-full grid grid-cols-4">
               <TabsTrigger value="wallpaper">Wallpaper</TabsTrigger>
               <TabsTrigger value="marquee">Marquee</TabsTrigger>
               <TabsTrigger value="particles">Particles</TabsTrigger>
+              <TabsTrigger value="effects">Effects</TabsTrigger>
             </TabsList>
             
             <TabsContent value="wallpaper" className="space-y-4 mt-4">
@@ -566,6 +753,90 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
                 </div>
                 <Input type="file" className="hidden" accept="image/*" onChange={handleUploadParticles} disabled={isSending} />
               </label>
+            </TabsContent>
+
+            <TabsContent value="effects" className="space-y-4 mt-4">
+              <div className="grid grid-cols-3 gap-2">
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                  onClick={handleDrunk}
+                  disabled={isSending}
+                >
+                  <Zap className="h-6 w-6" />
+                  <span className="text-xs">Drunk</span>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                  onClick={handleFaketerminal}
+                  disabled={isSending}
+                >
+                  <Code className="h-6 w-6" />
+                  <span className="text-xs">Terminal</span>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                  onClick={handleConfetti}
+                  disabled={isSending}
+                >
+                  <PartyPopper className="h-6 w-6" />
+                  <span className="text-xs">Confetti</span>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                  onClick={handleSpotlight}
+                  disabled={isSending}
+                >
+                  <Flashlight className="h-6 w-6" />
+                  <span className="text-xs">Spotlight</span>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                  onClick={handleTextscreen}
+                  disabled={isSending}
+                >
+                  <Type className="h-6 w-6" />
+                  <span className="text-xs">Text</span>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                  onClick={handleWavescreen}
+                  disabled={isSending}
+                >
+                  <Waves className="h-6 w-6" />
+                  <span className="text-xs">Wave</span>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                  onClick={handleDvdBounce}
+                  disabled={isSending}
+                >
+                  <Disc className="h-6 w-6" />
+                  <span className="text-xs">DVD</span>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                  onClick={handleFireworks}
+                  disabled={isSending}
+                >
+                  <Rocket className="h-6 w-6" />
+                  <span className="text-xs">Fireworks</span>
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
         </DialogContent>

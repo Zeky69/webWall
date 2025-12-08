@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import { BASE_URL, api } from "../services/api";
-import { Terminal, Layout, RotateCw, Mouse, Zap, RefreshCw, Image, ScrollText, Sparkles, Trash2, X } from "lucide-react";
+import { Terminal, Layout, RotateCw, Mouse, Zap, RefreshCw, Image, ScrollText, Sparkles, Trash2, X, Code, PartyPopper, Flashlight, Type, Waves, Disc, Rocket } from "lucide-react";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 import { Input } from "./ui/input";
@@ -185,6 +185,30 @@ export function ClientLogs({ clientId, isOpen, onClose }: ClientLogsProps) {
                 </Button>
                 <Button variant="outline" size="sm" className="justify-start bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300" onClick={() => handleAction(() => api.drunk(clientId), "Drunk")}>
                   <Zap className="h-3.5 w-3.5 mr-2" /> Drunk
+                </Button>
+                <Button variant="outline" size="sm" className="justify-start bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300" onClick={() => handleAction(() => api.faketerminal(clientId), "Terminal")}>
+                  <Code className="h-3.5 w-3.5 mr-2" /> Terminal
+                </Button>
+                <Button variant="outline" size="sm" className="justify-start bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300" onClick={() => handleAction(() => api.confetti(clientId), "Confetti")}>
+                  <PartyPopper className="h-3.5 w-3.5 mr-2" /> Confetti
+                </Button>
+                <Button variant="outline" size="sm" className="justify-start bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300" onClick={() => handleAction(() => api.spotlight(clientId), "Spotlight")}>
+                  <Flashlight className="h-3.5 w-3.5 mr-2" /> Spotlight
+                </Button>
+                <Button variant="outline" size="sm" className="justify-start bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300" onClick={() => {
+                  const text = prompt("Texte à afficher :", "HELLO WORLD");
+                  if (text !== null) handleAction(() => api.textscreen(clientId, text), "Text Screen");
+                }}>
+                  <Type className="h-3.5 w-3.5 mr-2" /> Text Screen
+                </Button>
+                <Button variant="outline" size="sm" className="justify-start bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300" onClick={() => handleAction(() => api.wavescreen(clientId), "Wave Screen")}>
+                  <Waves className="h-3.5 w-3.5 mr-2" /> Wave Screen
+                </Button>
+                <Button variant="outline" size="sm" className="justify-start bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300" onClick={() => handleAction(() => api.dvdbounce(clientId), "DVD Bounce")}>
+                  <Disc className="h-3.5 w-3.5 mr-2" /> DVD Bounce
+                </Button>
+                <Button variant="outline" size="sm" className="justify-start bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300" onClick={() => handleAction(() => api.fireworks(clientId), "Fireworks")}>
+                  <Rocket className="h-3.5 w-3.5 mr-2" /> Fireworks
                 </Button>
               </div>
             </div>

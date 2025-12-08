@@ -196,6 +196,72 @@ export const api = {
     return response.text();
   },
 
+  faketerminal: async (id: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/faketerminal?id=${id}`, {
+      headers: getHeaders(),
+    });
+    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
+    if (!response.ok) throw new Error(await response.text());
+    return response.text();
+  },
+
+  confetti: async (id: string, url?: string): Promise<string> => {
+    const query = url ? `&url=${encodeURIComponent(url)}` : "";
+    const response = await fetch(`${BASE_URL}/api/confetti?id=${id}${query}`, {
+      headers: getHeaders(),
+    });
+    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
+    if (!response.ok) throw new Error(await response.text());
+    return response.text();
+  },
+
+  spotlight: async (id: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/spotlight?id=${id}`, {
+      headers: getHeaders(),
+    });
+    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
+    if (!response.ok) throw new Error(await response.text());
+    return response.text();
+  },
+
+  textscreen: async (id: string, text?: string): Promise<string> => {
+    const query = text ? `&text=${encodeURIComponent(text)}` : "";
+    const response = await fetch(`${BASE_URL}/api/textscreen?id=${id}${query}`, {
+      headers: getHeaders(),
+    });
+    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
+    if (!response.ok) throw new Error(await response.text());
+    return response.text();
+  },
+
+  wavescreen: async (id: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/wavescreen?id=${id}`, {
+      headers: getHeaders(),
+    });
+    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
+    if (!response.ok) throw new Error(await response.text());
+    return response.text();
+  },
+
+  dvdbounce: async (id: string, url?: string): Promise<string> => {
+    const query = url ? `&url=${encodeURIComponent(url)}` : "";
+    const response = await fetch(`${BASE_URL}/api/dvdbounce?id=${id}${query}`, {
+      headers: getHeaders(),
+    });
+    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
+    if (!response.ok) throw new Error(await response.text());
+    return response.text();
+  },
+
+  fireworks: async (id: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/fireworks?id=${id}`, {
+      headers: getHeaders(),
+    });
+    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
+    if (!response.ok) throw new Error(await response.text());
+    return response.text();
+  },
+
   uploadParticles: async (id: string, file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
