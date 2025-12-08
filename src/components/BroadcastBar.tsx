@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Image as ImageIcon, ScrollText, Send, Upload, X, CheckSquare, Layout, RotateCw, RefreshCw, Sparkles, Mouse } from "lucide-react";
+import { Image as ImageIcon, ScrollText, Send, Upload, X, CheckSquare, Layout, RotateCw, RefreshCw, Sparkles, Mouse, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 interface BroadcastBarProps {
@@ -312,6 +312,32 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
     }
   };
 
+  const handleDrunk = async () => {
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.drunk('*');
+        toast.success(`Drunk mode sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.drunk(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`Drunk mode sent to ${successCount} clients`);
+      }
+      onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast drunk mode");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
     <>
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-2 bg-foreground/90 backdrop-blur-md text-background rounded-full shadow-2xl animate-in slide-in-from-bottom-10 fade-in duration-300 border border-white/10">
@@ -395,6 +421,17 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
         >
           <Mouse className="h-3 w-3 mr-2" />
           Clones
+        </Button>
+
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-8 text-xs hover:bg-white/10 hover:text-white text-background"
+          onClick={handleDrunk}
+          disabled={isSending}
+        >
+          <Zap className="h-3 w-3 mr-2" />
+          Drunk
         </Button>
 
         <Button 

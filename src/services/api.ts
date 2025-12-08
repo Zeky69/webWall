@@ -1,4 +1,4 @@
-const BASE_URL = "https://wallchange.codeky.fr";
+export const BASE_URL = "https://wallchange.codeky.fr";
 
 export interface Client {
   id: string;
@@ -68,6 +68,15 @@ export const api = {
 
   changeWallpaper: async (id: string, url: string): Promise<string> => {
     const response = await fetch(`${BASE_URL}/api/send?id=${id}&url=${encodeURIComponent(url)}`, {
+      headers: getHeaders(),
+    });
+    if (response.status === 429) throw new Error("Rate limit: Please wait 10s");
+    if (!response.ok) throw new Error(await response.text());
+    return response.text();
+  },
+
+  drunk: async (id: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/drunk?id=${id}`, {
       headers: getHeaders(),
     });
     if (response.status === 429) throw new Error("Rate limit: Please wait 10s");

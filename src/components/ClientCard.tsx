@@ -6,9 +6,10 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
+import { ClientLogs } from "./ClientLogs";
 import { 
   Monitor, RefreshCw, Upload, Image,
-  Layout, RotateCw, Sparkles, ScrollText, Send, Mouse, Check
+  Layout, RotateCw, Sparkles, ScrollText, Send, Mouse, Check, Zap, Terminal
 } from "lucide-react";
 
 interface ClientCardProps {
@@ -27,6 +28,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
   const [activeTab, setActiveTab] = useState<Tab>('wallpaper');
   const [inputUrl, setInputUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLogsOpen, setIsLogsOpen] = useState(false);
 
   const tabs = [
     { id: 'wallpaper' as Tab, icon: Image, label: 'Fond' },
@@ -109,6 +111,8 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
         }
       }}
     >
+      <ClientLogs clientId={clientId} isOpen={isLogsOpen} onClose={() => setIsLogsOpen(false)} />
+
       {/* Checkbox de sélection */}
       {isSelectionMode && (
         <div className="absolute top-4 right-4 z-50">
@@ -146,14 +150,26 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
         </div>
         
         {!isSelectionMode && (
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10" 
-            onClick={(e) => { e.stopPropagation(); handleTriggerUpdate(); }}
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-1">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10" 
+              onClick={(e) => { e.stopPropagation(); setIsLogsOpen(true); }}
+              title="Logs"
+            >
+              <Terminal className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10" 
+              onClick={(e) => { e.stopPropagation(); handleTriggerUpdate(); }}
+              title="Update"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
         )}
       </div>
 
@@ -238,6 +254,13 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
           >
             <Mouse className="h-3.5 w-3.5" />
             Clones
+          </button>
+          <button
+            onClick={() => handleAction(() => api.drunk(clientId), "Drunk")}
+            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg bg-muted/30 hover:bg-primary/10 text-muted-foreground hover:text-primary text-xs font-medium transition-colors"
+          >
+            <Zap className="h-3.5 w-3.5" />
+            Drunk
           </button>
         </div>
       </div>
