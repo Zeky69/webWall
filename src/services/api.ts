@@ -261,4 +261,12 @@ export const api = {
     await handleResponse(response);
     return response.text();
   },
+
+  lock: async (id: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/lock?id=${id}`, {
+      headers: getHeaders(),
+    });
+    await handleResponse(response);
+    return response.text();
+  },
 };

@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Image as ImageIcon, ScrollText, Send, Upload, X, CheckSquare, Layout, RotateCw, RefreshCw, Sparkles, Mouse, Zap, Code, PartyPopper, Flashlight, Type, Waves, Disc, Rocket, Wand2 } from "lucide-react";
+import { Image as ImageIcon, ScrollText, Send, Upload, X, CheckSquare, Layout, RotateCw, RefreshCw, Sparkles, Mouse, Zap, Code, PartyPopper, Flashlight, Type, Waves, Disc, Rocket, Wand2, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 interface BroadcastBarProps {
@@ -229,6 +229,32 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
       onClearSelection();
     } catch (error: any) {
       toast.error(error.message || "Failed to broadcast reverse");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleLock = async () => {
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.lock('*');
+        toast.success(`Lock sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.lock(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`Lock sent to ${successCount} clients`);
+      }
+      onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast lock");
     } finally {
       setIsSending(false);
     }
@@ -595,6 +621,17 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
         >
           <RotateCw className="h-3 w-3 mr-2" />
           Reverse
+        </Button>
+
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-8 text-xs hover:bg-white/10 hover:text-white text-background"
+          onClick={handleLock}
+          disabled={isSending}
+        >
+          <Lock className="h-3 w-3 mr-2" />
+          Lock
         </Button>
 
         <Button 

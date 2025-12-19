@@ -11,7 +11,7 @@ import { ClientLogs } from "./ClientLogs";
 import { 
   Monitor, RefreshCw, Upload, Image,
   Layout, RotateCw, Sparkles, ScrollText, Send, Mouse, Check, Zap, Terminal,
-  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2
+  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2, Lock
 } from "lucide-react";
 
 interface ClientCardProps {
@@ -251,6 +251,14 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
           >
             <RotateCw className="h-3.5 w-3.5" />
             Inverser
+          </button>
+          <button
+            onClick={() => handleAction(() => api.lock(clientId), "Verrouiller")}
+            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg bg-muted/30 hover:bg-primary/10 text-muted-foreground hover:text-primary text-xs font-medium transition-colors"
+            title="Verrouiller"
+          >
+            <Lock className="h-3.5 w-3.5" />
+            Lock
           </button>
         </div>
 
