@@ -11,7 +11,7 @@ import { ClientLogs } from "./ClientLogs";
 import { 
   Monitor, RefreshCw, Upload, Image,
   Layout, RotateCw, Sparkles, ScrollText, Send, Mouse, Check, Zap, Terminal,
-  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2, Lock
+  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2, Lock, Trash2, MoreVertical
 } from "lucide-react";
 
 interface ClientCardProps {
@@ -31,6 +31,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
   const [inputUrl, setInputUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const tabs = [
     { id: 'wallpaper' as Tab, icon: Image, label: 'Fond' },
@@ -152,16 +153,67 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
         </div>
         
         {!isSelectionMode && (
-          <div className="flex gap-1">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10" 
-              onClick={(e) => { e.stopPropagation(); setIsLogsOpen(true); }}
-              title="Logs"
-            >
-              <Terminal className="h-4 w-4" />
-            </Button>
+          <div className="flex gap-1 relative">
+            {api.isAdmin() && (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10" 
+                  onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }}
+                  title="More actions"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+
+                {isMenuOpen && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={(e) => { e.stopPropagation(); setIsMenuOpen(false); }} 
+                    />
+                    <div className="absolute top-9 right-0 z-50 min-w-[140px] bg-popover border border-border rounded-md shadow-md p-1 flex flex-col gap-1 animate-in fade-in zoom-in-95 duration-200">
+                      <button
+                        className="flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm hover:bg-accent hover:text-accent-foreground w-full text-left transition-colors"
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          handleAction(() => api.lock(clientId), "Verrouiller");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <Lock className="h-3.5 w-3.5" />
+                        Lock Session
+                      </button>
+                      <button
+                        className="flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm hover:bg-accent hover:text-accent-foreground w-full text-left transition-colors"
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setIsLogsOpen(true);
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <Terminal className="h-3.5 w-3.5" />
+                        View Logs
+                      </button>
+                      <div className="h-px bg-border/50 my-0.5" />
+                      <button
+                        className="flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm hover:bg-destructive hover:text-destructive-foreground text-destructive w-full text-left transition-colors"
+                        onClick={(e) => { 
+                          e.stopPropagation();
+                          if (confirm("Êtes-vous sûr de vouloir désinstaller ce client ?")) {
+                            handleAction(() => api.uninstallClient(clientId, "web"), "Désinstallation");
+                          }
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Uninstall
+                      </button>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
             <Button 
               variant="ghost" 
               size="icon" 
@@ -252,14 +304,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
             <RotateCw className="h-3.5 w-3.5" />
             Inverser
           </button>
-          <button
-            onClick={() => handleAction(() => api.lock(clientId), "Verrouiller")}
-            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg bg-muted/30 hover:bg-primary/10 text-muted-foreground hover:text-primary text-xs font-medium transition-colors"
-            title="Verrouiller"
-          >
-            <Lock className="h-3.5 w-3.5" />
-            Lock
-          </button>
+
         </div>
 
         <Dialog>

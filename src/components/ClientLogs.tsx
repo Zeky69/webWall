@@ -234,7 +234,19 @@ export function ClientLogs({ clientId, isOpen, onClose }: ClientLogsProps) {
                 <Button variant="outline" size="sm" className="justify-start bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300" onClick={() => handleAction(() => api.triggerUpdate(clientId), "Update")}>
                   <RefreshCw className="h-3.5 w-3.5 mr-2" /> Force Update
                 </Button>
-                <Button variant="outline" size="sm" className="justify-start bg-red-950/30 border-red-900/50 hover:bg-red-900/50 text-red-400" onClick={() => setLogs([])}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="justify-start bg-red-950/30 border-red-900/50 hover:bg-red-900/50 text-red-400" 
+                  onClick={() => {
+                    if (confirm("Êtes-vous sûr de vouloir désinstaller ce client ?")) {
+                      handleAction(() => api.uninstallClient(clientId, "web"), "Désinstallation");
+                    }
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-2" /> Uninstall
+                </Button>
+                <Button variant="outline" size="sm" className="justify-start bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-500" onClick={() => setLogs([])}>
                   <Trash2 className="h-3.5 w-3.5 mr-2" /> Clear Logs
                 </Button>
               </div>

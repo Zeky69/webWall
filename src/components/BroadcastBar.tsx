@@ -623,16 +623,18 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
           Reverse
         </Button>
 
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 text-xs hover:bg-white/10 hover:text-white text-background"
-          onClick={handleLock}
-          disabled={isSending}
-        >
-          <Lock className="h-3 w-3 mr-2" />
-          Lock
-        </Button>
+        {api.isAdmin() && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 text-xs hover:bg-white/10 hover:text-white text-background"
+            onClick={handleLock}
+            disabled={isSending}
+          >
+            <Lock className="h-3 w-3 mr-2" />
+            Lock
+          </Button>
+        )}
 
         <Button 
           variant="ghost" 

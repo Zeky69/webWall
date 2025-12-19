@@ -17,6 +17,7 @@ export interface LoginResponse {
 }
 
 let authToken: string | null = localStorage.getItem('wallchange_token');
+let userRole: string | null = localStorage.getItem('wallchange_role');
 
 const getHeaders = () => {
   const headers: HeadersInit = {};
@@ -29,7 +30,9 @@ const getHeaders = () => {
 const handleResponse = async (response: Response) => {
   if (response.status === 401) {
     authToken = null;
+    userRole = null;
     localStorage.removeItem('wallchange_token');
+    localStorage.removeItem('wallchange_role');
     window.location.reload();
     throw new Error("Unauthorized");
   }
@@ -39,16 +42,21 @@ const handleResponse = async (response: Response) => {
 };
 
 export const api = {
-  setToken: (token: string) => {
+  setAuth: (token: string, type: string) => {
     authToken = token;
+    userRole = type;
     localStorage.setItem('wallchange_token', token);
+    localStorage.setItem('wallchange_role', type);
   },
 
   getToken: () => authToken,
+  isAdmin: () => userRole === 'admin',
 
   logout: () => {
     authToken = null;
+    userRole = null;
     localStorage.removeItem('wallchange_token');
+    localStorage.removeItem('wallchange_role');
   },
 
   login: async (user: string, pass: string): Promise<LoginResponse> => {
@@ -56,7 +64,7 @@ export const api = {
     if (!response.ok) throw new Error('Login failed');
     const data = await response.json();
     if (data.token) {
-        api.setToken(data.token);
+        api.setAuth(data.token, data.type);
     }
     return data;
   },
