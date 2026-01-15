@@ -151,6 +151,14 @@ export const api = {
     return response.text();
   },
 
+  requestScreenshot: async (id: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/screenshot?id=${id}`, {
+      headers: getHeaders(),
+    });
+    await handleResponse(response);
+    return response.text();
+  },
+
   uninstallClient: async (id: string, from: string): Promise<string> => {
     const response = await fetch(`${BASE_URL}/api/uninstall?id=${id}&from=${from}`, {
       headers: getHeaders(),

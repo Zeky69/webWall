@@ -11,7 +11,7 @@ import { ClientLogs } from "./ClientLogs";
 import { 
   Monitor, RefreshCw, Upload, Image,
   Layout, RotateCw, Sparkles, ScrollText, Send, Mouse, Check, Zap, Terminal,
-  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2, Lock, Trash2, MoreVertical
+  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2, Lock, Trash2, MoreVertical, Eye
 } from "lucide-react";
 
 interface ClientCardProps {
@@ -32,6 +32,8 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
   const [isLoading, setIsLoading] = useState(false);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScreenOpen, setIsScreenOpen] = useState(false);
+  const [screenTimestamp, setScreenTimestamp] = useState(Date.now());
 
   const tabs = [
     { id: 'wallpaper' as Tab, icon: Image, label: 'Fond' },
@@ -97,6 +99,16 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
       toast.success(label);
     } catch (error: any) {
       toast.error(error.message || `Échec`);
+    }
+  };
+
+  const handleRequestScreen = async () => {
+    try {
+        await api.requestScreenshot(clientId);
+        toast.success("Demande de capture d'écran envoyée");
+        setTimeout(() => setScreenTimestamp(Date.now()), 3000); 
+    } catch (e: any) {
+        toast.error(e.message || "Erreur capture");
     }
   };
 
@@ -302,10 +314,39 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
             title="Inverser"
           >
             <RotateCw className="h-3.5 w-3.5" />
-            Inverser
+            Inversé
           </button>
-
+          <button
+            onClick={() => { setIsScreenOpen(true); handleRequestScreen(); }}
+            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg bg-muted/30 hover:bg-primary/10 text-muted-foreground hover:text-primary text-xs font-medium transition-colors"
+            title="Voir l'écran"
+          >
+            <Eye className="h-3.5 w-3.5" />
+            Écran
+          </button>
         </div>
+
+      <Dialog open={isScreenOpen} onOpenChange={setIsScreenOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+            <DialogHeader>
+                <DialogTitle>Écran de {clientId}</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center gap-4">
+                <img 
+                    src={`https://wallchange.codeky.fr/uploads/screenshots/${clientId}.jpg?t=${screenTimestamp}`} 
+                    alt={`Écran de ${clientId}`} 
+                    className="max-w-full h-auto rounded border shadow-sm"
+                    onError={(e) => {
+                        (e.target as HTMLImageElement).src = "https://placehold.co/600x400?text=Image+indisponible";
+                    }}
+                />
+                <Button onClick={handleRequestScreen} className="gap-2">
+                    <RefreshCw className="h-4 w-4" />
+                    Actualiser la capture
+                </Button>
+            </div>
+        </DialogContent>
+      </Dialog>
 
         <Dialog>
           <DialogTrigger asChild>
