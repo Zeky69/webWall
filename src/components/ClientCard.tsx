@@ -327,7 +327,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
         </div>
 
       <Dialog open={isScreenOpen} onOpenChange={setIsScreenOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto" aria-describedby={undefined}>
             <DialogHeader>
                 <DialogTitle>Écran de {clientId}</DialogTitle>
             </DialogHeader>
@@ -335,6 +335,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
                 <img 
                     src={`${BASE_URL}/uploads/screenshots/${clientId}.jpg?t=${screenTimestamp}`} 
                     alt={`Écran de ${clientId}`} 
+                    crossOrigin="anonymous"
                     className="max-w-full h-auto rounded border shadow-sm"
                     onError={(e) => {
                         (e.target as HTMLImageElement).src = "https://placehold.co/600x400?text=Image+indisponible";

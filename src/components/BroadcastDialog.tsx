@@ -148,7 +148,7 @@ export function BroadcastDialog({ clients }: BroadcastDialogProps) {
           Broadcast
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Broadcast to Clients</DialogTitle>
         </DialogHeader>
