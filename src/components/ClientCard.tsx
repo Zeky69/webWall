@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import type { MouseEvent } from "react";
-import { api } from "../services/api";
+import { api, BASE_URL } from "../services/api";
 import type { Client } from "../services/api";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
@@ -333,7 +333,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
             </DialogHeader>
             <div className="flex flex-col items-center gap-4">
                 <img 
-                    src={`https://wallchange.codeky.fr/uploads/screenshots/${clientId}.jpg?t=${screenTimestamp}`} 
+                    src={`${BASE_URL}/uploads/screenshots/${clientId}.jpg?t=${screenTimestamp}`} 
                     alt={`Écran de ${clientId}`} 
                     className="max-w-full h-auto rounded border shadow-sm"
                     onError={(e) => {
