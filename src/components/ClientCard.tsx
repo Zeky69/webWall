@@ -11,7 +11,7 @@ import { ClientLogs } from "./ClientLogs";
 import { 
   Monitor, RefreshCw, Upload, Image,
   Layout, RotateCw, Sparkles, ScrollText, Send, Mouse, Check, Zap, Terminal,
-  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2, Lock, Trash2, MoreVertical, Eye
+  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2, Lock, Trash2, MoreVertical, Eye, Loader2
 } from "lucide-react";
 
 interface ClientCardProps {
@@ -33,6 +33,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScreenOpen, setIsScreenOpen] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
   const [screenTimestamp, setScreenTimestamp] = useState(Date.now());
 
   const tabs = [
@@ -102,12 +103,21 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
     }
   };
 
-  const handleRequestScreen = async () => {
+  coif (isCapturing) return;
+    setIsCapturing(true);
     try {
         await api.requestScreenshot(clientId);
-        toast.success("Demande de capture d'écran envoyée");
-        setTimeout(() => setScreenTimestamp(Date.now()), 3000); 
+        toast.info("Demande envoyée, attente de la capture...");
+        
+        // Attendre 4s que le client upload l'image
+        await new Promise(resolve => setTimeout(resolve, 4000));
+        
+        setScreenTimestamp(Date.now());
+        toast.success("Capture mise à jour");
     } catch (e: any) {
+        toast.error(e.message || "Erreur capture");
+    } finally {
+        setIsCapturing(false
         toast.error(e.message || "Erreur capture");
     }
   };
@@ -322,20 +332,38 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
             title="Voir l'écran"
           >
             <Eye className="h-3.5 w-3.5" />
-            Écran
-          </button>
-        </div>
-
-      <Dialog open={isScreenOpen} onOpenChange={setIsScreenOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto" aria-describedby={undefined}>
-            <DialogHeader>
-                <DialogTitle>Écran de {clientId}</DialogTitle>
-            </DialogHeader>
-            <div className="flex flex-col items-center gap-4">
-                <img 
-                    src={`${BASE_URL}/uploads/screenshots/${clientId}.jpg?t=${screenTimestamp}`} 
-                    alt={`Écran de ${clientId}`} 
-                    crossOrigin="anonymous"
+            Écran w-full">
+                <div className="relative min-h-[300px] flex items-center justify-center bg-muted/20 rounded border w-full overflow-hidden">
+                    {isCapturing && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10 transition-all">
+                            <div className="flex flex-col items-center gap-2">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                <span className="text-sm font-medium text-muted-foreground">Capture en cours...</span>
+                            </div>
+                        </div>
+                    )}
+                    <img 
+                        key={screenTimestamp}
+                        src={`${BASE_URL}/uploads/screenshots/${clientId}.jpg?t=${screenTimestamp}`} 
+                        alt={`Écran de ${clientId}`} 
+                        crossOrigin="anonymous"
+                        className="max-w-full max-h-[70vh] w-auto h-auto rounded shadow-sm object-contain"
+                        onError={(e) => {
+                            // Si pas en cours de capture, on met l'image d'erreur
+                            // Sinon on laisse l'image précédente ou vide le temps que ça charge
+                            if (!isCapturing) {
+                                (e.target as HTMLImageElement).src = "https://placehold.co/600x400?text=Image+indisponible";
+                            }
+                        }}
+                    />
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button onClick={handleRequestScreen} disabled={isCapturing} className="gap-2 min-w-[160px]">
+                      {isCapturing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                      {isCapturing ? "En cours..." : "Actualiser la capture"}
+                  </Button>
+                </divsOrigin="anonymous"
                     className="max-w-full h-auto rounded border shadow-sm"
                     onError={(e) => {
                         (e.target as HTMLImageElement).src = "https://placehold.co/600x400?text=Image+indisponible";
