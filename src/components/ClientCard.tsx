@@ -35,6 +35,8 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
   const [isScreenOpen, setIsScreenOpen] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [screenTimestamp, setScreenTimestamp] = useState(Date.now());
+  const [selectedEffect, setSelectedEffect] = useState<string>("");
+  const [effectValue, setEffectValue] = useState<number>(10);
 
   const tabs = [
     { id: 'wallpaper' as Tab, icon: Image, label: 'Fond' },
@@ -48,7 +50,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
     setIsLoading(true);
     try {
       if (activeTab === 'wallpaper') {
-        await api.changeWallpaper(clientId, inputUrl);
+        await api.changeWallpaper(clientId, inputUrl, selectedEffect, effectValue);
       } else if (activeTab === 'marquee') {
         await api.marquee(clientId, inputUrl);
       } else {
@@ -70,7 +72,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
     setIsLoading(true);
     try {
       if (activeTab === 'wallpaper') {
-        await api.uploadWallpaper(clientId, file);
+        await api.uploadWallpaper(clientId, file, selectedEffect, effectValue);
       } else if (activeTab === 'marquee') {
         await api.uploadMarquee(clientId, file);
       } else {
@@ -271,6 +273,42 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
             </button>
           ))}
         </div>
+
+        {/* Controls Effects (Wallpaper Only) */}
+        {activeTab === 'wallpaper' && (
+          <div className="flex items-center gap-1 bg-muted/20 p-1 rounded-md overflow-x-auto">
+             <button 
+               onClick={() => setSelectedEffect(selectedEffect === "pixelate" ? "" : "pixelate")}
+               className={`text-[10px] px-2 py-1 rounded transition-colors border ${selectedEffect === "pixelate" ? "bg-primary text-primary-foreground border-primary" : "bg-transparent border-transparent hover:bg-muted"}`}
+             >
+               Pixelate
+             </button>
+             <button 
+               onClick={() => setSelectedEffect(selectedEffect === "blur" ? "" : "blur")}
+               className={`text-[10px] px-2 py-1 rounded transition-colors border ${selectedEffect === "blur" ? "bg-primary text-primary-foreground border-primary" : "bg-transparent border-transparent hover:bg-muted"}`}
+             >
+               Blur
+             </button>
+             <button 
+               onClick={() => setSelectedEffect(selectedEffect === "invert" ? "" : "invert")}
+               className={`text-[10px] px-2 py-1 rounded transition-colors border ${selectedEffect === "invert" ? "bg-primary text-primary-foreground border-primary" : "bg-transparent border-transparent hover:bg-muted"}`}
+             >
+               Invert
+             </button>
+             
+             {selectedEffect && selectedEffect !== "invert" && (
+                <div className="flex items-center gap-1 ml-auto">
+                   <span className="text-[9px] text-muted-foreground">Val: {effectValue}</span>
+                   <input 
+                     type="range" min="1" max="50" step="1"
+                     value={effectValue}
+                     onChange={(e) => setEffectValue(parseInt(e.target.value))}
+                     className="w-16 h-1"
+                   />
+                </div>
+             )}
+          </div>
+        )}
 
         {/* Zone de saisie unifiée */}
         <div className="flex gap-2">
