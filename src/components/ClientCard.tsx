@@ -35,8 +35,6 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
   const [isScreenOpen, setIsScreenOpen] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [screenTimestamp, setScreenTimestamp] = useState(Date.now());
-  const [selectedEffect, setSelectedEffect] = useState<string>("");
-  const [effectValue, setEffectValue] = useState<number>(10);
 
   const tabs = [
     { id: 'wallpaper' as Tab, icon: Image, label: 'Fond' },
@@ -50,7 +48,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
     setIsLoading(true);
     try {
       if (activeTab === 'wallpaper') {
-        await api.changeWallpaper(clientId, inputUrl, selectedEffect, effectValue);
+        await api.changeWallpaper(clientId, inputUrl);
       } else if (activeTab === 'marquee') {
         await api.marquee(clientId, inputUrl);
       } else {
@@ -72,7 +70,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
     setIsLoading(true);
     try {
       if (activeTab === 'wallpaper') {
-        await api.uploadWallpaper(clientId, file, selectedEffect, effectValue);
+        await api.uploadWallpaper(clientId, file);
       } else if (activeTab === 'marquee') {
         await api.uploadMarquee(clientId, file);
       } else {
@@ -105,7 +103,8 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
     }
   };
 
-  coif (isCapturing) return;
+  const handleRequestScreen = async () => {
+    if (isCapturing) return;
     setIsCapturing(true);
     try {
         await api.requestScreenshot(clientId);
@@ -119,8 +118,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
     } catch (e: any) {
         toast.error(e.message || "Erreur capture");
     } finally {
-        setIsCapturing(false
-        toast.error(e.message || "Erreur capture");
+        setIsCapturing(false);
     }
   };
 
@@ -274,75 +272,55 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
           ))}
         </div>
 
-        {/* Controls Effects (Wallpaper Only) */}
-        {activeTab === 'wallpaper' && (
-          <div className="flex items-center gap-1 bg-muted/20 p-1 rounded-md overflow-x-auto">
-             <button 
-               onClick={() => setSelectedEffect(selectedEffect === "pixelate" ? "" : "pixelate")}
-               className={`text-[10px] px-2 py-1 rounded transition-colors border ${selectedEffect === "pixelate" ? "bg-primary text-primary-foreground border-primary" : "bg-transparent border-transparent hover:bg-muted"}`}
-             >
-               Pixelate
-             </button>
-             <button 
-               onClick={() => setSelectedEffect(selectedEffect === "blur" ? "" : "blur")}
-               className={`text-[10px] px-2 py-1 rounded transition-colors border ${selectedEffect === "blur" ? "bg-primary text-primary-foreground border-primary" : "bg-transparent border-transparent hover:bg-muted"}`}
-             >
-               Blur
-             </button>
-             <button 
-               onClick={() => setSelectedEffect(selectedEffect === "invert" ? "" : "invert")}
-               className={`text-[10px] px-2 py-1 rounded transition-colors border ${selectedEffect === "invert" ? "bg-primary text-primary-foreground border-primary" : "bg-transparent border-transparent hover:bg-muted"}`}
-             >
-               Invert
-             </button>
-             
-             {selectedEffect && selectedEffect !== "invert" && (
-                <div className="flex items-center gap-1 ml-auto">
-                   <span className="text-[9px] text-muted-foreground">Val: {effectValue}</span>
-                   <input 
-                     type="range" min="1" max="50" step="1"
-                     value={effectValue}
-                     onChange={(e) => setEffectValue(parseInt(e.target.value))}
-                     className="w-16 h-1"
-                   />
+        {/* Controls for Wallpaper, Marquee, Particles */}
+        {['wallpaper', 'marquee', 'particles'].includes(activeTab) && (
+           <>
+              <div className="flex gap-2 mb-3">
+                <Input 
+                  placeholder={
+                    activeTab === 'marquee' ? "Texte ou URL de l'image..." :
+                    activeTab === 'particles' ? "URL de l'image des particules..." :
+                    "URL de l'image..."
+                  }
+                  value={inputUrl}
+                  onChange={(e) => setInputUrl(e.target.value)}
+                  className="h-9 text-xs"
+                />
+                <Button size="icon" className="h-9 w-9 shrink-0" onClick={handleSendUrl} disabled={isLoading}>
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                </Button>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
                 </div>
-             )}
-          </div>
+                <div className="relative flex justify-center text-[10px] uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Ou upload</span>
+                </div>
+              </div>
+
+              <label className="mt-3 flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors group-hover:border-primary/50">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <Upload className="h-6 w-6 mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <p className="text-xs text-muted-foreground">
+                    {activeTab === 'particles' ? "Cliquez pour uploader (Particule)" : "Cliquez pour uploader"}
+                  </p>
+                </div>
+                <Input 
+                  ref={fileInputRef}
+                  type="file" 
+                  className="hidden" 
+                  accept="image/*" 
+                  onChange={handleUpload} 
+                  disabled={isLoading} 
+                />
+              </label>
+           </>
         )}
 
-        {/* Zone de saisie unifiée */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Input 
-              placeholder="Coller une URL d'image..." 
-              value={inputUrl}
-              onChange={(e) => setInputUrl(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSendUrl()}
-              className="h-10 bg-muted/30 border-0 pr-10 text-sm placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-primary/50"
-              disabled={isLoading}
-            />
-            <Button 
-              size="icon" 
-              onClick={handleSendUrl} 
-              disabled={isLoading || !inputUrl.trim()} 
-              className="absolute right-1 top-1 h-8 w-8 rounded-md"
-            >
-              <Send className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-          <label className="flex items-center justify-center h-10 w-10 rounded-lg bg-muted/30 hover:bg-primary/10 cursor-pointer transition-colors group/upload">
-            <Upload className="h-4 w-4 text-muted-foreground group-hover/upload:text-primary transition-colors" />
-            <input 
-              ref={fileInputRef}
-              type="file" 
-              accept="image/*"
-              className="hidden"
-              onChange={handleUpload}
-              disabled={isLoading}
-            />
-          </label>
-        </div>
-
+        {/* Effects Tab Content - REMOVED, functionality moved to Dialog */}
+        
         {/* Séparateur subtil */}
         <div className="h-px bg-border/50" />
 
@@ -370,7 +348,15 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
             title="Voir l'écran"
           >
             <Eye className="h-3.5 w-3.5" />
-            Écran w-full">
+            Écran
+          </button>
+        </div>
+
+      <Dialog open={isScreenOpen} onOpenChange={setIsScreenOpen}>
+        <DialogContent className="sm:max-w-[800px] w-full">
+            <DialogHeader>
+              <DialogTitle>Écran de {clientId}</DialogTitle>
+            </DialogHeader>
                 <div className="relative min-h-[300px] flex items-center justify-center bg-muted/20 rounded border w-full overflow-hidden">
                     {isCapturing && (
                         <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10 transition-all">
@@ -387,8 +373,6 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
                         crossOrigin="anonymous"
                         className="max-w-full max-h-[70vh] w-auto h-auto rounded shadow-sm object-contain"
                         onError={(e) => {
-                            // Si pas en cours de capture, on met l'image d'erreur
-                            // Sinon on laisse l'image précédente ou vide le temps que ça charge
                             if (!isCapturing) {
                                 (e.target as HTMLImageElement).src = "https://placehold.co/600x400?text=Image+indisponible";
                             }
@@ -396,22 +380,12 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
                     />
                 </div>
                 
-                <div className="flex gap-2">
+                <div className="flex gap-2 justify-end">
                   <Button onClick={handleRequestScreen} disabled={isCapturing} className="gap-2 min-w-[160px]">
                       {isCapturing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                       {isCapturing ? "En cours..." : "Actualiser la capture"}
                   </Button>
-                </divsOrigin="anonymous"
-                    className="max-w-full h-auto rounded border shadow-sm"
-                    onError={(e) => {
-                        (e.target as HTMLImageElement).src = "https://placehold.co/600x400?text=Image+indisponible";
-                    }}
-                />
-                <Button onClick={handleRequestScreen} className="gap-2">
-                    <RefreshCw className="h-4 w-4" />
-                    Actualiser la capture
-                </Button>
-            </div>
+                </div>
         </DialogContent>
       </Dialog>
 
@@ -427,6 +401,18 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
               <DialogTitle>Effects for {clientId}</DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-3 gap-3 py-4">
+               {/* Image Effects */}
+                  <Button 
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => handleAction(() => api.invert(clientId), "Invert")}
+                  >
+                    <div className="w-6 h-6 bg-gradient-to-tr from-white to-black border border-current"></div>
+                    <span className="text-xs">Invert</span>
+                  </Button>
+
+                  <div className="col-span-3 h-px bg-border/50 my-1" />
+
               <Button 
                 variant="outline" 
                 className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"

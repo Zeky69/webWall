@@ -22,8 +22,32 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
   const [marqueeUrl, setMarqueeUrl] = useState("");
   const [particlesUrl, setParticlesUrl] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [selectedEffect, setSelectedEffect] = useState<string>("");
-  const [effectValue, setEffectValue] = useState<number>(10);
+  
+  const handleInvert = async () => {
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.invert('*');
+        toast.success(`Invert sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.invert(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`Invert sent to ${successCount} clients`);
+      }
+      onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast invert");
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const handleBroadcastWallpaper = async () => {
     if (!wallpaperUrl) return;
@@ -31,13 +55,13 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
     
     try {
       if (selectedCount === totalCount) {
-        await api.changeWallpaper('*', wallpaperUrl, selectedEffect, effectValue);
+        await api.changeWallpaper('*', wallpaperUrl);
         toast.success(`Wallpaper sent to all clients`);
       } else {
         let successCount = 0;
         for (const clientId of selectedIds) {
           try {
-            await api.changeWallpaper(clientId, wallpaperUrl, selectedEffect, effectValue);
+            await api.changeWallpaper(clientId, wallpaperUrl);
             successCount++;
           } catch (error) {
             console.error(`Failed to send to ${clientId}`, error);
@@ -90,10 +114,11 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
     if (!file) return;
 
     setIsSending(true);
+
     try {
       if (selectedCount === totalCount) {
         // Use * to send to all clients directly
-        await api.uploadWallpaper('*', file, selectedEffect, effectValue);
+        await api.uploadWallpaper('*', file);
         toast.success(`Wallpaper uploaded and sent to all clients`);
       } else {
         // Send to first client to upload, then use * won't work so we send individually
@@ -101,7 +126,7 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
         let successCount = 0;
         for (const clientId of selectedIds) {
           try {
-            await api.uploadWallpaper(clientId, file, selectedEffect, effectValue);
+            await api.uploadWallpaper(clientId, file);
             successCount++;
           } catch (error) {
              console.error(`Failed to send to ${clientId}`, error);
@@ -711,56 +736,6 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
                 </div>
               </div>
 
-              {/* Effets */}
-              <div className="space-y-2 border border-border/50 p-2 rounded-md bg-secondary/10">
-                <div className="flex items-center justify-between">
-                   <label className="text-sm font-medium">Image Effects (Optional)</label>
-                   {selectedEffect && (
-                     <Button variant="ghost" size="sm" className="h-6 text-xs p-1" onClick={() => setSelectedEffect("")}>Clear</Button>
-                   )}
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                  <Button 
-                    variant={selectedEffect === "pixelate" ? "default" : "outline"}
-                    size="sm"
-                    className="text-xs h-8"
-                    onClick={() => setSelectedEffect("pixelate")}
-                  >
-                    Pixelate
-                  </Button>
-                  <Button 
-                    variant={selectedEffect === "blur" ? "default" : "outline"}
-                    size="sm"
-                    className="text-xs h-8"
-                    onClick={() => setSelectedEffect("blur")}
-                  >
-                    Blur
-                  </Button>
-                  <Button 
-                    variant={selectedEffect === "invert" ? "default" : "outline"}
-                    size="sm"
-                    className="text-xs h-8"
-                    onClick={() => setSelectedEffect("invert")}
-                  >
-                    Invert
-                  </Button>
-                </div>
-                
-                {selectedEffect && selectedEffect !== "invert" && (
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs w-12 text-right">Value: {effectValue}</span>
-                    <input 
-                        type="range" 
-                        min="1" 
-                        max="50" 
-                        value={effectValue}
-                        onChange={(e) => setEffectValue(parseInt(e.target.value))}
-                        className="h-8 w-full accent-primary cursor-pointer"
-                    />
-                  </div>
-                )}
-              </div>
-              
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
@@ -848,6 +823,19 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
 
             <TabsContent value="effects" className="space-y-4 mt-4">
               <div className="grid grid-cols-3 gap-2">
+                 {/* Image Effects Section */}
+                 <div className="col-span-3 grid grid-cols-3 gap-2 mb-2 p-2 bg-secondary/10 rounded-lg">
+                    <Button 
+                        variant="outline"
+                        className="h-16 flex flex-col gap-1 hover:bg-accent hover:text-accent-foreground"
+                        onClick={handleInvert}
+                        disabled={isSending}
+                    >
+                        <div className="w-4 h-4 bg-gradient-to-tr from-white to-black border border-current"></div>
+                        <span className="text-xs">Invert</span>
+                    </Button>
+                 </div>
+
                 <Button 
                   variant="outline" 
                   className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"

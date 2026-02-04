@@ -82,11 +82,9 @@ export const api = {
     return response.json();
   },
 
-  changeWallpaper: async (id: string, url: string, effect?: string, value?: number): Promise<string> => {
+  changeWallpaper: async (id: string, url: string): Promise<string> => {
     let query = `${BASE_URL}/api/send?id=${id}&url=${encodeURIComponent(url)}`;
-    if (effect) query += `&effect=${encodeURIComponent(effect)}`;
-    if (value !== undefined) query += `&value=${value}`;
-
+    
     const response = await fetch(query, {
       headers: getHeaders(),
     });
@@ -102,14 +100,12 @@ export const api = {
     return response.text();
   },
 
-  uploadWallpaper: async (id: string | undefined, file: File, effect?: string, value?: number): Promise<string> => {
+  uploadWallpaper: async (id: string | undefined, file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
     
     const params = new URLSearchParams();
     if (id) params.append("id", id);
-    if (effect) params.append("effect", effect);
-    if (value !== undefined) params.append("value", value.toString());
     
     const query = params.toString() ? `?${params.toString()}` : "";
 
@@ -237,6 +233,14 @@ export const api = {
 
   spotlight: async (id: string): Promise<string> => {
     const response = await fetch(`${BASE_URL}/api/spotlight?id=${id}`, {
+      headers: getHeaders(),
+    });
+    await handleResponse(response);
+    return response.text();
+  },
+
+  invert: async (id: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/invert?id=${id}`, {
       headers: getHeaders(),
     });
     await handleResponse(response);
