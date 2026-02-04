@@ -461,6 +461,24 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
               <Button 
                 variant="outline" 
                 className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                onClick={() => handleAction(() => api.nyancat(clientId), "Nyan Cat")}
+              >
+                <span className="text-xl">🌈</span>
+                <span className="text-xs">Nyan Cat</span>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                onClick={() => handleAction(() => api.fly(clientId), "The Fly")}
+              >
+                <span className="text-xl">🪰</span>
+                <span className="text-xs">The Fly</span>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
                 onClick={() => {
                   const text = prompt("Texte à afficher :", "HELLO WORLD");
                   if (text !== null) handleAction(() => api.textscreen(clientId, text), "Text Screen");

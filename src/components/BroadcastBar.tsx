@@ -287,6 +287,58 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
     }
   };
 
+  const handleNyanCat = async () => {
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.nyancat('*');
+        toast.success(`Nyan Cat sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.nyancat(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`Nyan Cat sent to ${successCount} clients`);
+      }
+       onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast nyancat");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleFly = async () => {
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.fly('*');
+        toast.success(`The Fly sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.fly(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`The Fly sent to ${successCount} clients`);
+      }
+       onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast fly");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   const handleShowDesktop = async () => {
     setIsSending(true);
     try {
@@ -874,6 +926,26 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
                 >
                   <Flashlight className="h-6 w-6" />
                   <span className="text-xs">Spotlight</span>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                  onClick={handleNyanCat}
+                  disabled={isSending}
+                >
+                  <span className="text-xl">🌈</span>
+                  <span className="text-xs">Nyan Cat</span>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col gap-2 hover:bg-accent hover:text-accent-foreground"
+                  onClick={handleFly}
+                  disabled={isSending}
+                >
+                  <span className="text-xl">🪰</span>
+                  <span className="text-xs">The Fly</span>
                 </Button>
 
                 <Button 

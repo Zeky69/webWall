@@ -300,4 +300,20 @@ export const api = {
     await handleResponse(response);
     return response.text();
   },
+
+  nyancat: async (id: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/nyancat?id=${id}`, {
+        headers: getHeaders(),
+    });
+    await handleResponse(response);
+    return response.text();
+  },
+
+  fly: async (id: string): Promise<string> => {
+      const response = await fetch(`${BASE_URL}/api/fly?id=${id}`, {
+          headers: getHeaders(),
+      });
+      await handleResponse(response);
+      return response.text();
+  }
 };
