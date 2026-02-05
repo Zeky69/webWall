@@ -16,6 +16,7 @@ export function BroadcastDialog({ clients }: BroadcastDialogProps) {
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [wallpaperUrl, setWallpaperUrl] = useState("");
   const [marqueeUrl, setMarqueeUrl] = useState("");
+  const [coverUrl, setCoverUrl] = useState("");
   const [isSending, setIsSending] = useState(false);
 
   const toggleClient = (id: string) => {
@@ -99,6 +100,33 @@ export function BroadcastDialog({ clients }: BroadcastDialogProps) {
     } finally {
       setIsSending(false);
       setMarqueeUrl("");
+    }
+  };
+
+  const handleBroadcastCover = async () => {
+    if (!coverUrl || selectedClients.length === 0) return;
+    setIsSending(true);
+    
+    try {
+      if (selectedClients.length === clients.length) {
+        await api.cover('*', coverUrl);
+        toast.success(`Cover sent to all clients`);
+      } else {
+        let successCount = 0;
+        let failCount = 0;
+        for (const clientId of selectedClients) {
+          try {
+            await api.cover(clientId, coverUrl);
+            successCount++;
+          } catch (error) { failCount++; }
+        }
+        if (successCount > 0) toast.success(`Cover sent to ${successCount} clients`);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed");
+    } finally {
+      setIsSending(false);
+      setCoverUrl("");
     }
   };
 
@@ -196,9 +224,10 @@ export function BroadcastDialog({ clients }: BroadcastDialogProps) {
           {/* Actions Area */}
           <div className="flex-1 pl-2">
             <Tabs defaultValue="wallpaper" className="w-full">
-              <TabsList className="w-full grid grid-cols-2">
+              <TabsList className="w-full grid grid-cols-3">
                 <TabsTrigger value="wallpaper">Wallpaper</TabsTrigger>
                 <TabsTrigger value="marquee">Marquee</TabsTrigger>
+                <TabsTrigger value="cover">Cover</TabsTrigger>
               </TabsList>
               
               <TabsContent value="wallpaper" className="space-y-4 mt-4">
@@ -245,6 +274,22 @@ export function BroadcastDialog({ clients }: BroadcastDialogProps) {
                     />
                     <Button size="icon" onClick={handleBroadcastMarquee} disabled={isSending || selectedClients.length === 0}>
                       <ScrollText className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="cover" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Cover Image URL</label>
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="Image URL" 
+                      value={coverUrl}
+                      onChange={(e) => setCoverUrl(e.target.value)}
+                    />
+                    <Button size="icon" onClick={handleBroadcastCover} disabled={isSending || selectedClients.length === 0}>
+                      <Send className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

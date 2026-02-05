@@ -21,7 +21,7 @@ interface ClientCardProps {
   onToggleSelect?: (e: MouseEvent) => void;
 }
 
-type Tab = 'wallpaper' | 'marquee' | 'particles';
+type Tab = 'wallpaper' | 'marquee' | 'particles' | 'cover';
 
 export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect }: ClientCardProps) {
   const clientId = client.id;
@@ -40,6 +40,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
     { id: 'wallpaper' as Tab, icon: Image, label: 'Fond' },
     { id: 'marquee' as Tab, icon: ScrollText, label: 'Marquee' },
     { id: 'particles' as Tab, icon: Sparkles, label: 'Particles' },
+    { id: 'cover' as Tab, icon: Layout, label: 'Cover' },
   ];
 
   // Envoi par URL selon l'onglet actif
@@ -51,6 +52,8 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
         await api.changeWallpaper(clientId, inputUrl);
       } else if (activeTab === 'marquee') {
         await api.marquee(clientId, inputUrl);
+      } else if (activeTab === 'cover') {
+        await api.cover(clientId, inputUrl);
       } else {
         await api.particles(clientId, inputUrl);
       }
@@ -73,6 +76,8 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
         await api.uploadWallpaper(clientId, file);
       } else if (activeTab === 'marquee') {
         await api.uploadMarquee(clientId, file);
+      } else if (activeTab === 'cover') {
+        await api.uploadCover(clientId, file);
       } else {
         await api.uploadParticles(clientId, file);
       }
@@ -272,14 +277,15 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
           ))}
         </div>
 
-        {/* Controls for Wallpaper, Marquee, Particles */}
-        {['wallpaper', 'marquee', 'particles'].includes(activeTab) && (
+        {/* Controls for Wallpaper, Marquee, Particles, Cover */}
+        {['wallpaper', 'marquee', 'particles', 'cover'].includes(activeTab) && (
            <>
               <div className="flex gap-2 mb-3">
                 <Input 
                   placeholder={
                     activeTab === 'marquee' ? "Texte ou URL de l'image..." :
                     activeTab === 'particles' ? "URL de l'image des particules..." :
+                    activeTab === 'cover' ? "URL de l'image de couverture..." :
                     "URL de l'image..."
                   }
                   value={inputUrl}

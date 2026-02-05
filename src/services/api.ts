@@ -130,6 +130,18 @@ export const api = {
     return response.text();
   },
 
+  uploadCover: async (id: string, file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await fetch(`${BASE_URL}/api/upload?id=${id}&type=cover`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: formData,
+    });
+    await handleResponse(response);
+    return response.text();
+  },
+
   uploadFile: async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
@@ -192,6 +204,14 @@ export const api = {
 
   marquee: async (id: string, url: string): Promise<string> => {
     const response = await fetch(`${BASE_URL}/api/marquee?id=${id}&url=${encodeURIComponent(url)}`, {
+      headers: getHeaders(),
+    });
+    await handleResponse(response);
+    return response.text();
+  },
+
+  cover: async (id: string, url: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/cover?id=${id}&url=${encodeURIComponent(url)}`, {
       headers: getHeaders(),
     });
     await handleResponse(response);
