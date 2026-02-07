@@ -11,7 +11,7 @@ import { ClientLogs } from "./ClientLogs";
 import { 
   Monitor, RefreshCw, Upload, Image,
   Layout, RotateCw, Sparkles, ScrollText, Send, Mouse, Check, Zap, Terminal,
-  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2, Lock, Trash2, MoreVertical, Eye, Loader2
+  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2, Lock, Trash2, MoreVertical, Eye, Loader2, Power
 } from "lucide-react";
 
 interface ClientCardProps {
@@ -35,6 +35,9 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
   const [isScreenOpen, setIsScreenOpen] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [screenTimestamp, setScreenTimestamp] = useState(Date.now());
+  const userRole = api.getRole();
+  const [isScreenOffOpen, setIsScreenOffOpen] = useState(false);
+  const [screenOffDuration, setScreenOffDuration] = useState("");
 
   const tabs = [
     { id: 'wallpaper' as Tab, icon: Image, label: 'Fond' },
@@ -42,6 +45,21 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
     { id: 'particles' as Tab, icon: Sparkles, label: 'Particles' },
     { id: 'cover' as Tab, icon: Layout, label: 'Cover' },
   ];
+
+  const handleScreenOff = async () => {
+    try {
+      setIsLoading(true);
+      const duration = screenOffDuration ? parseInt(screenOffDuration) : undefined;
+      await api.screenOff(clientId, duration);
+      toast.success("Écran éteint");
+      setScreenOffDuration("");
+      setIsScreenOffOpen(false);
+    } catch (error: any) {
+      toast.error(error.message || "Échec");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Envoi par URL selon l'onglet actif
   const handleSendUrl = async () => {
@@ -53,7 +71,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
       } else if (activeTab === 'marquee') {
         await api.marquee(clientId, inputUrl);
       } else if (activeTab === 'cover') {
-        await api.cover(clientId, inputUrl);
+         await api.cover(clientId, inputUrl);
       } else {
         await api.particles(clientId, inputUrl);
       }
@@ -281,18 +299,23 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
         {['wallpaper', 'marquee', 'particles', 'cover'].includes(activeTab) && (
            <>
               <div className="flex gap-2 mb-3">
-                <Input 
-                  placeholder={
-                    activeTab === 'marquee' ? "Texte ou URL de l'image..." :
-                    activeTab === 'particles' ? "URL de l'image des particules..." :
-                    activeTab === 'cover' ? "URL de l'image de couverture..." :
-                    "URL de l'image..."
-                  }
-                  value={inputUrl}
-                  onChange={(e) => setInputUrl(e.target.value)}
-                  className="h-9 text-xs"
-                />
-                <Button size="icon" className="h-9 w-9 shrink-0" onClick={handleSendUrl} disabled={isLoading}>
+                  <Input 
+                    placeholder={
+                      activeTab === 'marquee' ? "Texte ou URL de l'image..." :
+                      activeTab === 'particles' ? "URL de l'image des particules..." :
+                      activeTab === 'cover' ? "URL de l'image de couverture..." :
+                      "URL de l'image..."
+                    }
+                    value={inputUrl}
+                    onChange={(e) => setInputUrl(e.target.value)}
+                    className="h-9 text-xs"
+                  />
+                <Button 
+                    size="icon" 
+                    className="h-9 shrink-0 w-9"
+                    onClick={handleSendUrl} 
+                    disabled={isLoading}
+                >
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
               </div>
@@ -306,22 +329,24 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
                 </div>
               </div>
 
-              <label className="mt-3 flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors group-hover:border-primary/50">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="h-6 w-6 mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
-                  <p className="text-xs text-muted-foreground">
-                    {activeTab === 'particles' ? "Cliquez pour uploader (Particule)" : "Cliquez pour uploader"}
-                  </p>
-                </div>
-                <Input 
+              <div className="mt-3">
+                <input
+                  type="file"
                   ref={fileInputRef}
-                  type="file" 
-                  className="hidden" 
-                  accept="image/*" 
-                  onChange={handleUpload} 
-                  disabled={isLoading} 
+                  className="hidden"
+                  onChange={handleUpload}
+                  accept="image/*"
                 />
-              </label>
+                <Button 
+                  variant="outline" 
+                  className="w-full gap-2 h-9 text-xs"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading}
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  Choisir une image
+                </Button>
+              </div>
            </>
         )}
 
@@ -356,7 +381,43 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
             <Eye className="h-3.5 w-3.5" />
             Écran
           </button>
+          <button
+            onClick={() => {
+              if (userRole === 'admin') {
+                setIsScreenOffOpen(true);
+              } else {
+                handleScreenOff();
+              }
+            }}
+            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg bg-muted/30 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 text-xs font-medium transition-colors"
+            title="Éteindre l'écran"
+          >
+            <Power className="h-3.5 w-3.5" />
+            Power
+          </button>
         </div>
+
+      <Dialog open={isScreenOffOpen} onOpenChange={setIsScreenOffOpen}>
+        <DialogContent className="sm:max-w-[340px]">
+          <DialogHeader>
+            <DialogTitle>Éteindre l'écran</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <Input
+              type="number"
+              placeholder="Durée en secondes (défaut: 3)"
+              value={screenOffDuration}
+              onChange={(e) => setScreenOffDuration(e.target.value)}
+              className="h-9 text-sm"
+              min={1}
+            />
+            <Button onClick={handleScreenOff} disabled={isLoading} className="w-full gap-2">
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Power className="h-4 w-4" />}
+              Éteindre
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isScreenOpen} onOpenChange={setIsScreenOpen}>
         <DialogContent className="sm:max-w-[800px] w-full">

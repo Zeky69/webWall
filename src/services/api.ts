@@ -52,6 +52,10 @@ export const api = {
   getToken: () => authToken,
   isAdmin: () => userRole === 'admin',
 
+  getRole: () => {
+    return userRole || localStorage.getItem('wallchange_role');
+  },
+
   logout: () => {
     authToken = null;
     userRole = null;
@@ -212,6 +216,18 @@ export const api = {
 
   cover: async (id: string, url: string): Promise<string> => {
     const response = await fetch(`${BASE_URL}/api/cover?id=${id}&url=${encodeURIComponent(url)}`, {
+      headers: getHeaders(),
+    });
+    await handleResponse(response);
+    return response.text();
+  },
+
+  screenOff: async (id: string, duration?: number): Promise<string> => {
+    let url = `${BASE_URL}/api/screen-off?id=${id}`;
+    if (duration) {
+      url += `&duration=${duration}`;
+    }
+    const response = await fetch(url, {
       headers: getHeaders(),
     });
     await handleResponse(response);
