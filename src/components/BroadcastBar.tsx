@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Image as ImageIcon, ScrollText, Send, Upload, X, CheckSquare, Layout, RotateCw, RefreshCw, Sparkles, Mouse, Zap, Code, PartyPopper, Flashlight, Type, Waves, Disc, Rocket, Wand2, Lock } from "lucide-react";
+import { Image as ImageIcon, ScrollText, Send, Upload, X, CheckSquare, Layout, RotateCw, RefreshCw, Sparkles, Mouse, Zap, Code, PartyPopper, Flashlight, Type, Waves, Disc, Rocket, Wand2, Lock, Moon, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 interface BroadcastBarProps {
@@ -628,6 +628,59 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
     }
   };
 
+  const handleBlackout = async () => {
+    if (!confirm(`Blackout ${selectedCount} client(s) ? (écran noir 20min)`)) return;
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.blackout('*');
+        toast.success(`Blackout sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.blackout(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`Blackout sent to ${successCount} clients`);
+      }
+      onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast blackout");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleFakelock = async () => {
+    setIsSending(true);
+    try {
+      if (selectedCount === totalCount) {
+        await api.fakelock('*');
+        toast.success(`Fakelock sent to all clients`);
+      } else {
+        let successCount = 0;
+        for (const clientId of selectedIds) {
+          try {
+            await api.fakelock(clientId);
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to send to ${clientId}`, error);
+          }
+        }
+        if (successCount > 0) toast.success(`Fakelock sent to ${successCount} clients`);
+      }
+      onClearSelection();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to broadcast fakelock");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
     <>
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-2 bg-foreground/90 backdrop-blur-md text-background rounded-full shadow-2xl animate-in slide-in-from-bottom-10 fade-in duration-300 border border-white/10">
@@ -712,6 +765,32 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
           >
             <Lock className="h-3 w-3 mr-2" />
             Lock
+          </Button>
+        )}
+
+        {api.isAdmin() && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 text-xs hover:bg-orange-500/20 hover:text-orange-400 text-background"
+            onClick={handleBlackout}
+            disabled={isSending}
+          >
+            <Moon className="h-3 w-3 mr-2" />
+            Blackout
+          </Button>
+        )}
+
+        {api.isAdmin() && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 text-xs hover:bg-purple-500/20 hover:text-purple-400 text-background"
+            onClick={handleFakelock}
+            disabled={isSending}
+          >
+            <Shield className="h-3 w-3 mr-2" />
+            Fakelock
           </Button>
         )}
 
@@ -987,6 +1066,31 @@ export function BroadcastBar({ selectedCount, totalCount, onClearSelection, onSe
                   <Rocket className="h-6 w-6" />
                   <span className="text-xs">Fireworks</span>
                 </Button>
+
+                {api.isAdmin() && (
+                  <>
+                    <div className="col-span-3 h-px bg-border/50 my-1" />
+                    <div className="col-span-3 text-xs font-medium text-muted-foreground px-1">Admin</div>
+                    <Button 
+                      variant="outline" 
+                      className="h-20 flex flex-col gap-2 hover:bg-orange-500/10 hover:text-orange-500 border-orange-500/30"
+                      onClick={handleBlackout}
+                      disabled={isSending}
+                    >
+                      <Moon className="h-6 w-6" />
+                      <span className="text-xs">Blackout</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="h-20 flex flex-col gap-2 hover:bg-purple-500/10 hover:text-purple-500 border-purple-500/30"
+                      onClick={handleFakelock}
+                      disabled={isSending}
+                    >
+                      <Shield className="h-6 w-6" />
+                      <span className="text-xs">Fakelock</span>
+                    </Button>
+                  </>
+                )}
               </div>
             </TabsContent>
           </Tabs>

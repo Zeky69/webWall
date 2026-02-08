@@ -11,7 +11,7 @@ import { ClientLogs } from "./ClientLogs";
 import { 
   Monitor, RefreshCw, Upload, Image,
   Layout, RotateCw, Sparkles, ScrollText, Send, Mouse, Check, Zap, Terminal,
-  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2, Lock, Trash2, MoreVertical, Eye, Loader2, Power
+  PartyPopper, Flashlight, Code, Type, Waves, Disc, Rocket, Wand2, Lock, Trash2, MoreVertical, Eye, Loader2, Power, Moon, Shield, RotateCcw
 } from "lucide-react";
 
 interface ClientCardProps {
@@ -193,6 +193,11 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
                   {client.hostname}
                 </span>
               )}
+              {client.locked && (
+                <span className="text-[10px] text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                  <Lock className="h-2.5 w-2.5" /> Locked
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -233,6 +238,30 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
                         className="flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm hover:bg-accent hover:text-accent-foreground w-full text-left transition-colors"
                         onClick={(e) => { 
                           e.stopPropagation(); 
+                          if (confirm(`Blackout ${clientId} ? (écran noir 20min)`)) {
+                            handleAction(() => api.blackout(clientId), "Blackout activé");
+                          }
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <Moon className="h-3.5 w-3.5" />
+                        Blackout
+                      </button>
+                      <button
+                        className="flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm hover:bg-accent hover:text-accent-foreground w-full text-left transition-colors"
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          handleAction(() => api.fakelock(clientId), "Fakelock activé");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <Shield className="h-3.5 w-3.5" />
+                        Fakelock
+                      </button>
+                      <button
+                        className="flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm hover:bg-accent hover:text-accent-foreground w-full text-left transition-colors"
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
                           setIsLogsOpen(true);
                           setIsMenuOpen(false);
                         }}
@@ -241,6 +270,17 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
                         View Logs
                       </button>
                       <div className="h-px bg-border/50 my-0.5" />
+                      <button
+                        className="flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm hover:bg-accent hover:text-accent-foreground w-full text-left transition-colors"
+                        onClick={(e) => { 
+                          e.stopPropagation();
+                          handleAction(() => api.reinstall(clientId), "Réinstallation");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        Reinstall
+                      </button>
                       <button
                         className="flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm hover:bg-destructive hover:text-destructive-foreground text-destructive w-full text-left transition-colors"
                         onClick={(e) => { 
@@ -581,6 +621,32 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
                 <Rocket className="h-6 w-6" />
                 <span className="text-xs">Fireworks</span>
               </Button>
+
+              {api.isAdmin() && (
+                <>
+                  <div className="col-span-3 h-px bg-border/50 my-1" />
+                  <div className="col-span-3 text-xs font-medium text-muted-foreground px-1">Admin Only</div>
+                  <Button 
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 hover:bg-orange-500/10 hover:text-orange-500 border-orange-500/30"
+                    onClick={() => {
+                      if (confirm(`Blackout ${clientId} ? (écran noir 20min)`))
+                        handleAction(() => api.blackout(clientId), "Blackout activé");
+                    }}
+                  >
+                    <Moon className="h-6 w-6" />
+                    <span className="text-xs">Blackout</span>
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 hover:bg-purple-500/10 hover:text-purple-500 border-purple-500/30"
+                    onClick={() => handleAction(() => api.fakelock(clientId), "Fakelock activé")}
+                  >
+                    <Shield className="h-6 w-6" />
+                    <span className="text-xs">Fakelock</span>
+                  </Button>
+                </>
+              )}
             </div>
           </DialogContent>
         </Dialog>
