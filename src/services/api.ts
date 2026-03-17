@@ -17,6 +17,85 @@ export interface LoginResponse {
   type: string;
 }
 
+export interface ImageStatEntry {
+  hash: string;
+  stored_path: string;
+  original_name: string;
+  mime: string;
+  size_bytes: number;
+  first_seen_at: number;
+  last_seen_at: number;
+  upload_count: number;
+}
+
+export interface ImageStatsSummary {
+  total_uploads: number;
+  total_unique_images: number;
+  total_duplicate_uploads: number;
+  total_bytes_uploaded: number;
+  duplicate_ratio: number;
+  average_upload_size: number;
+}
+
+export interface FeatureLeaderboardUser {
+  user: string;
+  total_commands: number;
+  first_seen_at?: number;
+  last_seen_at?: number;
+  last_command?: string;
+  commands?: Record<string, number>;
+}
+
+export interface FeatureLeaderboardEntry {
+  feature: string;
+  count: number;
+}
+
+export interface FeatureRecentEvent {
+  timestamp: number;
+  user: string;
+  command: string;
+  details: string;
+}
+
+export interface FeatureStatsSummary {
+  total_commands: number;
+  unique_users: number;
+  feature_kinds: number;
+  recent_events_count: number;
+}
+
+export interface FeatureStatsPayload {
+  version: number;
+  created_at: number;
+  updated_at: number;
+  total_commands: number;
+  summary: FeatureStatsSummary;
+  leaderboards: {
+    top_users: FeatureLeaderboardUser[];
+    top_features: FeatureLeaderboardEntry[];
+  };
+  commands: Record<string, number>;
+  users: Record<string, unknown>;
+  recent_events: FeatureRecentEvent[];
+}
+
+export interface ImageStatsResponse {
+  version: number;
+  created_at: number;
+  updated_at: number;
+  last_upload_at: number;
+  total_uploads: number;
+  total_unique_images: number;
+  total_duplicate_uploads: number;
+  total_bytes_uploaded: number;
+  total_client_deliveries: number;
+  images: ImageStatEntry[];
+  top_images: ImageStatEntry[];
+  summary: ImageStatsSummary;
+  feature_stats?: FeatureStatsPayload;
+}
+
 let authToken: string | null = sessionStorage.getItem('wallchange_token');
 let userRole: string | null = sessionStorage.getItem('wallchange_role');
 
@@ -164,6 +243,14 @@ export const api = {
     });
     await handleResponse(response);
     return response.text();
+  },
+
+  getImageStats: async (): Promise<ImageStatsResponse> => {
+    const response = await fetch(`${BASE_URL}/api/stats`, {
+      headers: getHeaders(),
+    });
+    await handleResponse(response);
+    return response.json();
   },
 
   triggerUpdate: async (id: string): Promise<string> => {

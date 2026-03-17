@@ -4,9 +4,10 @@ import type { Client } from './services/api';
 import { ClientCard } from './components/ClientCard';
 import { BroadcastBar } from './components/BroadcastBar';
 import { Login } from './components/Login';
+import { StatsPage } from './components/StatsPage';
 import { Toaster } from 'sonner';
 import { Button } from './components/ui/button';
-import { RefreshCw, Users, LayoutDashboard, Settings, LogOut, Menu, CheckSquare } from 'lucide-react';
+import { RefreshCw, Users, LayoutDashboard, Settings, LogOut, Menu, CheckSquare, BarChart3 } from 'lucide-react';
 import { ModeToggle } from './components/mode-toggle';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
+  const [activeView, setActiveView] = useState<'dashboard' | 'stats'>('dashboard');
 
   const fetchClients = async () => {
     if (!isAuthenticated) {
@@ -142,9 +144,21 @@ function App() {
           </div>
 
           <nav className="flex-1 space-y-2">
-            <Button variant="secondary" className="w-full justify-start gap-3 font-medium">
+            <Button
+              variant={activeView === 'dashboard' ? 'secondary' : 'ghost'}
+              className="w-full justify-start gap-3 font-medium"
+              onClick={() => setActiveView('dashboard')}
+            >
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
+            </Button>
+            <Button
+              variant={activeView === 'stats' ? 'secondary' : 'ghost'}
+              className="w-full justify-start gap-3 font-medium"
+              onClick={() => setActiveView('stats')}
+            >
+              <BarChart3 className="h-4 w-4" />
+              Statistics
             </Button>
             <Button variant="ghost" className="w-full justify-start gap-3 font-medium text-muted-foreground hover:text-foreground">
               <Settings className="h-4 w-4" />
@@ -197,86 +211,88 @@ function App() {
           }}
         >
           <div className="max-w-7xl mx-auto space-y-8">
-            
-            {/* Hero Section */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/90 to-primary/70 text-primary-foreground p-8 md:p-12 shadow-2xl shadow-primary/20">
-              <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-              <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-64 w-64 rounded-full bg-black/10 blur-3xl" />
-              
-              <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                  <h2 className="text-3xl md:text-4xl font-bold mb-2">Welcome back!</h2>
-                  <p className="text-primary-foreground/80 text-lg max-w-md">
-                    You have <span className="font-bold bg-white/20 px-2 py-0.5 rounded-md">{clients.length}</span> active clients connected to the network.
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <Button 
-                    onClick={fetchClients} 
-                    disabled={loading} 
-                    className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm"
-                  >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                    Refresh Network
-                  </Button>
+            {activeView === 'dashboard' ? (
+              <>
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/90 to-primary/70 text-primary-foreground p-8 md:p-12 shadow-2xl shadow-primary/20">
+                  <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+                  <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-64 w-64 rounded-full bg-black/10 blur-3xl" />
+                  <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div>
+                      <h2 className="text-3xl md:text-4xl font-bold mb-2">Welcome back!</h2>
+                      <p className="text-primary-foreground/80 text-lg max-w-md">
+                        You have <span className="font-bold bg-white/20 px-2 py-0.5 rounded-md">{clients.length}</span> active clients connected to the network.
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={fetchClients}
+                        disabled={loading}
+                        className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm"
+                      >
+                        <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                        Refresh Network
+                      </Button>
 
-                  <Button 
-                    onClick={(e) => toggleSelectionMode(e)} 
-                    className={`
-                      border-0 backdrop-blur-sm transition-colors
-                      ${isSelectionMode ? 'bg-white text-primary hover:bg-white/90' : 'bg-white/20 hover:bg-white/30 text-white'}
-                    `}
-                  >
-                    <CheckSquare className="h-4 w-4 mr-2" />
-                    {isSelectionMode ? 'Cancel Selection' : 'Select Clients'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Clients Grid */}
-            <div>
-              <div className="flex items-center gap-2 mb-6">
-                <Users className="h-5 w-5 text-primary" />
-                <h3 className="text-xl font-semibold">Active Sessions</h3>
-              </div>
-
-              {clients.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-24 text-center border border-dashed border-border rounded-3xl bg-card/30">
-                  <div className="bg-secondary/50 p-4 rounded-full mb-4">
-                    <Users className="h-10 w-10 text-muted-foreground" />
+                      <Button
+                        onClick={(e) => toggleSelectionMode(e)}
+                        className={`
+                          border-0 backdrop-blur-sm transition-colors
+                          ${isSelectionMode ? 'bg-white text-primary hover:bg-white/90' : 'bg-white/20 hover:bg-white/30 text-white'}
+                        `}
+                      >
+                        <CheckSquare className="h-4 w-4 mr-2" />
+                        {isSelectionMode ? 'Cancel Selection' : 'Select Clients'}
+                      </Button>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold">No clients found</h3>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    Waiting for incoming connections...
-                  </p>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20">
-                  {clients.map((client) => (
-                    <ClientCard 
-                      key={client.id} 
-                      client={client} 
-                      isSelectionMode={isSelectionMode}
-                      isSelected={selectedClients.includes(client.id)}
-                      onToggleSelect={(e) => {
-                        if (e.ctrlKey || e.metaKey) {
-                          if (!isSelectionMode) setIsSelectionMode(true);
-                          toggleClientSelection(client.id);
-                        } else if (isSelectionMode) {
-                          toggleClientSelection(client.id);
-                        }
-                      }}
-                    />
-                  ))}
+
+                <div>
+                  <div className="flex items-center gap-2 mb-6">
+                    <Users className="h-5 w-5 text-primary" />
+                    <h3 className="text-xl font-semibold">Active Sessions</h3>
+                  </div>
+
+                  {clients.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 text-center border border-dashed border-border rounded-3xl bg-card/30">
+                      <div className="bg-secondary/50 p-4 rounded-full mb-4">
+                        <Users className="h-10 w-10 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-lg font-semibold">No clients found</h3>
+                      <p className="text-muted-foreground mt-1 text-sm">
+                        Waiting for incoming connections...
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20">
+                      {clients.map((client) => (
+                        <ClientCard
+                          key={client.id}
+                          client={client}
+                          isSelectionMode={isSelectionMode}
+                          isSelected={selectedClients.includes(client.id)}
+                          onToggleSelect={(e) => {
+                            if (e.ctrlKey || e.metaKey) {
+                              if (!isSelectionMode) setIsSelectionMode(true);
+                              toggleClientSelection(client.id);
+                            } else if (isSelectionMode) {
+                              toggleClientSelection(client.id);
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <StatsPage isAuthenticated={isAuthenticated} />
+            )}
           </div>
         </main>
 
         {/* Broadcast Bar */}
-        {isSelectionMode && selectedClients.length > 0 && (
+        {activeView === 'dashboard' && isSelectionMode && selectedClients.length > 0 && (
           <BroadcastBar 
             selectedCount={selectedClients.length} 
             totalCount={clients.length}
