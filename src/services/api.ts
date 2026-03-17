@@ -34,7 +34,7 @@ const handleResponse = async (response: Response) => {
     userRole = null;
     sessionStorage.removeItem('wallchange_token');
     sessionStorage.removeItem('wallchange_role');
-    window.location.reload();
+    window.dispatchEvent(new CustomEvent('wallchange:auth-lost'));
     throw new Error("Unauthorized");
   }
   if (response.status === 429) throw new Error("Rate limit: Please wait 10s");

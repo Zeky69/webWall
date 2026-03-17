@@ -19,12 +19,19 @@ function App() {
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
 
   const fetchClients = async () => {
+    if (!isAuthenticated) {
+      return;
+    }
     setLoading(true);
     try {
       const list = await api.listClients();
       setClients(list);
     } catch (error) {
       console.error("Failed to fetch clients", error);
+      if (error instanceof Error && error.message === "Unauthorized") {
+        setIsAuthenticated(false);
+        setClients([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -40,12 +47,28 @@ function App() {
   };
 
   useEffect(() => {
-    fetchClients();
     fetchVersion();
-    
-    // Auto refresh every 10 seconds
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    fetchClients();
+
     const interval = setInterval(fetchClients, 10000);
     return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    const onAuthLost = () => {
+      setIsAuthenticated(false);
+      setClients([]);
+    };
+
+    window.addEventListener('wallchange:auth-lost', onAuthLost);
+    return () => window.removeEventListener('wallchange:auth-lost', onAuthLost);
   }, []);
 
   useEffect(() => {
