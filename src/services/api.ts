@@ -51,6 +51,32 @@ export interface FeatureLeaderboardEntry {
   count: number;
 }
 
+export interface FeaturePcLeaderboardEntry {
+  target_id: string;
+  hostname?: string;
+  total_requests: number;
+  total_deliveries: number;
+  failed_requests: number;
+  success_rate: number;
+}
+
+export interface FeatureUserPcPairEntry {
+  user: string;
+  target_id: string;
+  count: number;
+}
+
+export interface FeatureUserFavoritePcEntry {
+  user: string;
+  target_id: string;
+  count: number;
+}
+
+export interface FeatureHostnameEntry {
+  hostname: string;
+  count: number;
+}
+
 export interface FeatureRecentEvent {
   timestamp: number;
   user: string;
@@ -63,6 +89,19 @@ export interface FeatureStatsSummary {
   unique_users: number;
   feature_kinds: number;
   recent_events_count: number;
+  pc_kinds?: number;
+  total_requests_sent?: number;
+  total_requests_delivered?: number;
+  failed_requests?: number;
+  wildcard_requests?: number;
+}
+
+export interface FeatureDispatchStats {
+  total_requests_sent?: number;
+  total_requests_delivered?: number;
+  failed_requests?: number;
+  wildcard_requests?: number;
+  requests_by_command?: Record<string, number>;
 }
 
 export interface FeatureStatsPayload {
@@ -74,9 +113,16 @@ export interface FeatureStatsPayload {
   leaderboards: {
     top_users: FeatureLeaderboardUser[];
     top_features: FeatureLeaderboardEntry[];
+    top_pcs?: FeaturePcLeaderboardEntry[];
+    top_user_pc_pairs?: FeatureUserPcPairEntry[];
+    top_user_favorite_pcs?: FeatureUserFavoritePcEntry[];
+    top_hostnames?: FeatureHostnameEntry[];
   };
   commands: Record<string, number>;
   users: Record<string, unknown>;
+  targets?: Record<string, unknown>;
+  user_target_pairs?: Record<string, number>;
+  dispatch?: FeatureDispatchStats;
   recent_events: FeatureRecentEvent[];
 }
 

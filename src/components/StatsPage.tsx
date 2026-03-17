@@ -148,6 +148,16 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
   const featureStats = useMemo(() => stats?.feature_stats, [stats]);
   const topUsers = useMemo(() => featureStats?.leaderboards?.top_users ?? [], [featureStats]);
   const topFeatures = useMemo(() => featureStats?.leaderboards?.top_features ?? [], [featureStats]);
+  const topPcs = useMemo(() => featureStats?.leaderboards?.top_pcs ?? [], [featureStats]);
+  const topHostnames = useMemo(() => featureStats?.leaderboards?.top_hostnames ?? [], [featureStats]);
+  const topUserPcPairs = useMemo(
+    () => [...(featureStats?.leaderboards?.top_user_pc_pairs ?? [])].sort((a, b) => b.count - a.count),
+    [featureStats],
+  );
+  const topUserFavoritePcs = useMemo(
+    () => [...(featureStats?.leaderboards?.top_user_favorite_pcs ?? [])].sort((a, b) => b.count - a.count),
+    [featureStats],
+  );
   const recentEvents = useMemo(() => {
     const events = featureStats?.recent_events ?? [];
     return [...events].reverse();
@@ -168,6 +178,11 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
 
   const totalCommands = featureStats?.summary.total_commands ?? 0;
   const uniqueUsers = featureStats?.summary.unique_users ?? 0;
+  const totalRequestsSent = featureStats?.summary.total_requests_sent ?? featureStats?.dispatch?.total_requests_sent ?? 0;
+  const totalRequestsDelivered = featureStats?.summary.total_requests_delivered ?? featureStats?.dispatch?.total_requests_delivered ?? 0;
+  const failedRequests = featureStats?.summary.failed_requests ?? featureStats?.dispatch?.failed_requests ?? 0;
+  const wildcardRequests = featureStats?.summary.wildcard_requests ?? featureStats?.dispatch?.wildcard_requests ?? 0;
+  const requestSuccessRate = totalRequestsSent > 0 ? percentage(totalRequestsDelivered, totalRequestsSent) : 0;
   const uniqueStorageBytes = useMemo(() => allImages.reduce((sum, image) => sum + (image.size_bytes || 0), 0), [allImages]);
   const dedupSavedBytes = Math.max(0, (stats?.summary.total_bytes_uploaded ?? 0) - uniqueStorageBytes);
   const duplicateRatePct = (stats?.summary.duplicate_ratio ?? 0) * 100;
@@ -222,6 +237,18 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
     value: entry.upload_count,
     hint: formatBytes(entry.size_bytes),
   })), [topImages]);
+
+  const pcBars = useMemo<BarDatum[]>(() => topPcs.map((entry) => ({
+    label: entry.hostname ? `${entry.hostname} (${entry.target_id})` : entry.target_id,
+    value: entry.total_requests,
+    hint: `${entry.total_deliveries} livrées`,
+  })), [topPcs]);
+
+  const hostnameBars = useMemo<BarDatum[]>(() => topHostnames.map((entry) => ({
+    label: entry.hostname,
+    value: entry.count,
+    hint: 'demandes',
+  })), [topHostnames]);
 
   return (
     <div className="space-y-6">
@@ -335,6 +362,34 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
         </Card>
       </div>
 
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card>
+          <CardHeader>
+            <CardDescription>Requêtes envoyées</CardDescription>
+            <CardTitle className="text-2xl">{formatNumber(totalRequestsSent)}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>Requêtes livrées (PC en ligne)</CardDescription>
+            <CardTitle className="text-2xl">{formatNumber(totalRequestsDelivered)}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>Échecs de livraison</CardDescription>
+            <CardTitle className="text-2xl">{formatNumber(failedRequests)}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>Taux de réussite des requêtes</CardDescription>
+            <CardTitle className="text-2xl">{requestSuccessRate.toFixed(1)}%</CardTitle>
+            <CardDescription>Wildcard: {formatNumber(wildcardRequests)}</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg"><PieChart className="h-4 w-4" /> Répartition images uniques vs doublons</CardTitle>
@@ -408,6 +463,64 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
           data={imageBars}
           maxItems={8}
         />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <HorizontalBarChart
+          title="Top PC demandés"
+          description="Quels PC sont les plus demandés par les utilisateurs."
+          data={pcBars}
+          maxItems={10}
+        />
+        <HorizontalBarChart
+          title="Top hostnames demandés"
+          description="Classement des machines par hostname sur les requêtes reçues."
+          data={hostnameBars}
+          maxItems={10}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Top user → PC (paires)</CardTitle>
+            <CardDescription>Les couples utilisateur/PC les plus fréquents.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {topUserPcPairs.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Pas de données user→PC pour l’instant.</p>
+            ) : (
+              topUserPcPairs.slice(0, 15).map((entry, index) => (
+                <div key={`${entry.user}-${entry.target_id}-${index}`} className="rounded-md border p-3 text-sm flex items-center justify-between gap-3">
+                  <div className="font-medium">#{index + 1} {entry.user} → {entry.target_id}</div>
+                  <div className="text-muted-foreground">{formatNumber(entry.count)}</div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">PC favoris par utilisateur</CardTitle>
+            <CardDescription>Pour chaque utilisateur: le PC le plus ciblé.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {topUserFavoritePcs.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Pas encore de préférences utilisateur.</p>
+            ) : (
+              topUserFavoritePcs.slice(0, 15).map((entry, index) => (
+                <div key={`${entry.user}-${entry.target_id}-${index}`} className="rounded-md border p-3 text-sm flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-medium">#{index + 1} {entry.user}</div>
+                    <div className="text-xs text-muted-foreground">PC favori: {entry.target_id}</div>
+                  </div>
+                  <div className="text-muted-foreground">{formatNumber(entry.count)}</div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
