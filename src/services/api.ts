@@ -190,6 +190,14 @@ export const api = {
     return response.text();
   },
 
+  getLatestScreenshot: async (id: string, timestamp: number): Promise<Blob> => {
+    const response = await fetch(`${BASE_URL}/api/screenshot/latest?id=${encodeURIComponent(id)}&t=${timestamp}`, {
+      headers: getHeaders(),
+    });
+    await handleResponse(response);
+    return response.blob();
+  },
+
   uninstallClient: async (id: string, _from: string): Promise<string> => {
     const response = await fetch(`${BASE_URL}/api/uninstall?id=${id}`, {
       headers: getHeaders(),

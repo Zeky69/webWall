@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import type { MouseEvent } from "react";
-import { api, BASE_URL } from "../services/api";
+import { api } from "../services/api";
 import type { Client } from "../services/api";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
@@ -35,6 +35,7 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
   const [isScreenOpen, setIsScreenOpen] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [screenTimestamp, setScreenTimestamp] = useState(Date.now());
+  const [screenImageUrl, setScreenImageUrl] = useState<string | null>(null);
   const userRole = api.getRole();
   const [isScreenOffOpen, setIsScreenOffOpen] = useState(false);
   const [screenOffDuration, setScreenOffDuration] = useState("");
@@ -135,8 +136,14 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
         
         // Attendre 4s que le client upload l'image
         await new Promise(resolve => setTimeout(resolve, 4000));
-        
-        setScreenTimestamp(Date.now());
+
+        const ts = Date.now();
+        setScreenTimestamp(ts);
+        const blob = await api.getLatestScreenshot(clientId, ts);
+        setScreenImageUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return URL.createObjectURL(blob);
+        });
         toast.success("Capture mise à jour");
     } catch (e: any) {
         toast.error(e.message || "Erreur capture");
@@ -144,6 +151,30 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
         setIsCapturing(false);
     }
   };
+
+  useEffect(() => {
+    if (!isScreenOpen) return;
+
+    const ts = Date.now();
+    setScreenTimestamp(ts);
+    api.getLatestScreenshot(clientId, ts)
+      .then((blob) => {
+        setScreenImageUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return URL.createObjectURL(blob);
+        });
+      })
+      .catch(() => {
+      });
+  }, [isScreenOpen, clientId]);
+
+  useEffect(() => {
+    return () => {
+      if (screenImageUrl) {
+        URL.revokeObjectURL(screenImageUrl);
+      }
+    };
+  }, [screenImageUrl]);
 
   return (
     <Card 
@@ -475,9 +506,8 @@ export function ClientCard({ client, isSelectionMode, isSelected, onToggleSelect
                     )}
                     <img 
                         key={screenTimestamp}
-                        src={`${BASE_URL}/uploads/screenshots/${clientId}.jpg?t=${screenTimestamp}`} 
+                      src={screenImageUrl || `https://placehold.co/600x400?text=Capture+indisponible`} 
                         alt={`Écran de ${clientId}`} 
-                        crossOrigin="anonymous"
                         className="max-w-full max-h-[70vh] w-auto h-auto rounded shadow-sm object-contain"
                         onError={(e) => {
                             if (!isCapturing) {
