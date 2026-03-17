@@ -13,7 +13,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://wallchange.codeky.fr:8000',
+        target: 'https://wallchange.codeky.fr',
         changeOrigin: true,
         secure: false,
       },

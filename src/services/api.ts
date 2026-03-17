@@ -17,8 +17,8 @@ export interface LoginResponse {
   type: string;
 }
 
-let authToken: string | null = localStorage.getItem('wallchange_token');
-let userRole: string | null = localStorage.getItem('wallchange_role');
+let authToken: string | null = sessionStorage.getItem('wallchange_token');
+let userRole: string | null = sessionStorage.getItem('wallchange_role');
 
 const getHeaders = () => {
   const headers: HeadersInit = {};
@@ -32,8 +32,8 @@ const handleResponse = async (response: Response) => {
   if (response.status === 401) {
     authToken = null;
     userRole = null;
-    localStorage.removeItem('wallchange_token');
-    localStorage.removeItem('wallchange_role');
+    sessionStorage.removeItem('wallchange_token');
+    sessionStorage.removeItem('wallchange_role');
     window.location.reload();
     throw new Error("Unauthorized");
   }
@@ -46,26 +46,33 @@ export const api = {
   setAuth: (token: string, type: string) => {
     authToken = token;
     userRole = type;
-    localStorage.setItem('wallchange_token', token);
-    localStorage.setItem('wallchange_role', type);
+    sessionStorage.setItem('wallchange_token', token);
+    sessionStorage.setItem('wallchange_role', type);
   },
 
   getToken: () => authToken,
   isAdmin: () => userRole === 'admin',
 
   getRole: () => {
-    return userRole || localStorage.getItem('wallchange_role');
+    return userRole || sessionStorage.getItem('wallchange_role');
   },
 
   logout: () => {
     authToken = null;
     userRole = null;
-    localStorage.removeItem('wallchange_token');
-    localStorage.removeItem('wallchange_role');
+    sessionStorage.removeItem('wallchange_token');
+    sessionStorage.removeItem('wallchange_role');
   },
 
   login: async (user: string, pass: string): Promise<LoginResponse> => {
-    const response = await fetch(`${BASE_URL}/api/login?user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
+    const body = new URLSearchParams({ user, pass });
+    const response = await fetch(`${BASE_URL}/api/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: body.toString(),
+    });
     if (!response.ok) throw new Error('Login failed');
     const data = await response.json();
     if (data.token) {
@@ -183,8 +190,8 @@ export const api = {
     return response.text();
   },
 
-  uninstallClient: async (id: string, from: string): Promise<string> => {
-    const response = await fetch(`${BASE_URL}/api/uninstall?id=${id}&from=${from}`, {
+  uninstallClient: async (id: string, _from: string): Promise<string> => {
+    const response = await fetch(`${BASE_URL}/api/uninstall?id=${id}`, {
       headers: getHeaders(),
     });
     await handleResponse(response);
