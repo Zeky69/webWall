@@ -34,6 +34,16 @@ const formatDate = (ts?: number) => {
 
 const formatNumber = (value: number) => new Intl.NumberFormat().format(value);
 
+const formatDuration = (seconds: number) => {
+  if (!seconds || seconds <= 0) return '0s';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+};
+
 const buildImageUrl = (path: string) => `${BASE_URL}/${path.replace(/^\/+/, '')}`;
 
 const percentage = (part: number, total: number) => (total > 0 ? (part / total) * 100 : 0);
@@ -150,6 +160,8 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
   const topFeatures = useMemo(() => featureStats?.leaderboards?.top_features ?? [], [featureStats]);
   const topPcs = useMemo(() => featureStats?.leaderboards?.top_pcs ?? [], [featureStats]);
   const topHostnames = useMemo(() => featureStats?.leaderboards?.top_hostnames ?? [], [featureStats]);
+  const topConnectedHostnames = useMemo(() => featureStats?.leaderboards?.top_connected_hostnames ?? [], [featureStats]);
+  const topConnectedUsers = useMemo(() => featureStats?.leaderboards?.top_connected_users ?? [], [featureStats]);
   const topUserPcPairs = useMemo(
     () => [...(featureStats?.leaderboards?.top_user_pc_pairs ?? [])].sort((a, b) => b.count - a.count),
     [featureStats],
@@ -178,6 +190,10 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
 
   const totalCommands = featureStats?.summary.total_commands ?? 0;
   const uniqueUsers = featureStats?.summary.unique_users ?? 0;
+  const totalConnectionSeconds = featureStats?.summary.total_connection_seconds ?? 0;
+  const totalConnectionSessions = featureStats?.summary.total_connection_sessions ?? 0;
+  const connectionUniqueHostnames = featureStats?.summary.connection_unique_hostnames ?? 0;
+  const connectionUniqueUsers = featureStats?.summary.connection_unique_users ?? 0;
   const totalRequestsSent = featureStats?.summary.total_requests_sent ?? featureStats?.dispatch?.total_requests_sent ?? 0;
   const totalRequestsDelivered = featureStats?.summary.total_requests_delivered ?? featureStats?.dispatch?.total_requests_delivered ?? 0;
   const failedRequests = featureStats?.summary.failed_requests ?? featureStats?.dispatch?.failed_requests ?? 0;
@@ -250,6 +266,12 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
     hint: 'WS livrées',
   })), [topHostnames]);
 
+  const connectedHostnameBars = useMemo<BarDatum[]>(() => topConnectedHostnames.map((entry) => ({
+    label: entry.hostname,
+    value: entry.total_seconds,
+    hint: `${entry.session_count} sessions`,
+  })), [topConnectedHostnames]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
@@ -292,6 +314,33 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
             <CardDescription>Heure la plus active</CardDescription>
             <CardTitle className="text-3xl">{favoriteHour.hour}</CardTitle>
             <CardDescription>{formatNumber(favoriteHour.count)} actions</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card>
+          <CardHeader>
+            <CardDescription>Temps total de connexion</CardDescription>
+            <CardTitle className="text-2xl">{formatDuration(totalConnectionSeconds)}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>Sessions WS cumulées</CardDescription>
+            <CardTitle className="text-2xl">{formatNumber(totalConnectionSessions)}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>Hostnames connectés</CardDescription>
+            <CardTitle className="text-2xl">{formatNumber(connectionUniqueHostnames)}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>Users connectés</CardDescription>
+            <CardTitle className="text-2xl">{formatNumber(connectionUniqueUsers)}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -478,6 +527,33 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
           data={hostnameBars}
           maxItems={10}
         />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <HorizontalBarChart
+          title="Top hostnames les plus utilisés (temps)"
+          description="Classement par durée cumulée de connexion WebSocket."
+          data={connectedHostnameBars}
+          maxItems={10}
+        />
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Temps de connexion par user</CardTitle>
+            <CardDescription>Quel user est resté connecté le plus longtemps.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {topConnectedUsers.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Pas assez de données.</p>
+            ) : (
+              topConnectedUsers.slice(0, 15).map((entry, index) => (
+                <div key={`${entry.user}-${index}`} className="rounded-md border p-3 text-sm flex items-center justify-between gap-3">
+                  <div className="font-medium">#{index + 1} {entry.user}</div>
+                  <div className="text-muted-foreground">{formatDuration(entry.total_seconds)} · {formatNumber(entry.session_count)} sessions</div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">

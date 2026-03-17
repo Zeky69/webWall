@@ -80,6 +80,18 @@ export interface FeatureHostnameEntry {
   count: number;
 }
 
+export interface FeatureConnectedHostnameEntry {
+  hostname: string;
+  total_seconds: number;
+  session_count: number;
+}
+
+export interface FeatureConnectedUserEntry {
+  user: string;
+  total_seconds: number;
+  session_count: number;
+}
+
 export interface FeatureRecentEvent {
   timestamp: number;
   user: string;
@@ -93,10 +105,23 @@ export interface FeatureStatsSummary {
   feature_kinds: number;
   recent_events_count: number;
   pc_kinds?: number;
+  total_connection_seconds?: number;
+  total_connection_sessions?: number;
+  connection_unique_hostnames?: number;
+  connection_unique_users?: number;
   total_requests_sent?: number;
   total_requests_delivered?: number;
   failed_requests?: number;
   wildcard_requests?: number;
+}
+
+export interface FeatureConnectionStats {
+  total_connection_seconds?: number;
+  total_connection_sessions?: number;
+  hostname_seconds?: Record<string, number>;
+  hostname_sessions?: Record<string, number>;
+  user_hostname_seconds?: Record<string, number>;
+  users?: Record<string, unknown>;
 }
 
 export interface FeatureDispatchStats {
@@ -120,12 +145,15 @@ export interface FeatureStatsPayload {
     top_user_pc_pairs?: FeatureUserPcPairEntry[];
     top_user_favorite_pcs?: FeatureUserFavoritePcEntry[];
     top_hostnames?: FeatureHostnameEntry[];
+    top_connected_hostnames?: FeatureConnectedHostnameEntry[];
+    top_connected_users?: FeatureConnectedUserEntry[];
   };
   commands: Record<string, number>;
   users: Record<string, unknown>;
   targets?: Record<string, unknown>;
   user_target_pairs?: Record<string, number>;
   dispatch?: FeatureDispatchStats;
+  connections?: FeatureConnectionStats;
   recent_events: FeatureRecentEvent[];
 }
 
