@@ -15,6 +15,12 @@ interface BarDatum {
   hint?: string;
 }
 
+interface HeatmapData {
+  xLabels: string[];
+  yLabels: string[];
+  values: number[][];
+}
+
 const formatBytes = (bytes: number) => {
   if (!bytes || bytes <= 0) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -115,6 +121,74 @@ function ActivityByDayChart({ data }: { data: Array<{ day: string; count: number
                 </div>
               );
             })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function HeatmapCard({ title, description, data, compact = false }: {
+  title: string;
+  description: string;
+  data: HeatmapData;
+  compact?: boolean;
+}) {
+  const maxValue = useMemo(() => {
+    let max = 0;
+    data.values.forEach((row) => row.forEach((value) => {
+      if (value > max) max = value;
+    }));
+    return max;
+  }, [data]);
+
+  const hasData = maxValue > 0;
+  const cellSize = compact ? 'h-6 w-6' : 'h-7 w-7';
+
+  const alphaFor = (value: number) => {
+    if (maxValue <= 0 || value <= 0) return 0.08;
+    const ratio = value / maxValue;
+    return 0.12 + ratio * 0.78;
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {!hasData ? (
+          <p className="text-sm text-muted-foreground">Pas assez de données.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <div
+              className="grid gap-1 min-w-max"
+              style={{ gridTemplateColumns: `max-content repeat(${data.xLabels.length}, minmax(0, 1fr))` }}
+            >
+              <div className="text-[10px] text-muted-foreground pr-1">&nbsp;</div>
+              {data.xLabels.map((label, index) => (
+                <div key={`${label}-${index}`} className="text-[10px] text-muted-foreground text-center truncate">
+                  {label}
+                </div>
+              ))}
+
+              {data.yLabels.map((rowLabel, rowIndex) => (
+                <>
+                  <div key={`row-${rowLabel}-${rowIndex}`} className="text-[10px] text-muted-foreground pr-1 flex items-center justify-end">
+                    {rowLabel}
+                  </div>
+                  {data.values[rowIndex].map((value, colIndex) => (
+                    <div
+                      key={`cell-${rowIndex}-${colIndex}`}
+                      title={`${rowLabel} · ${data.xLabels[colIndex]}: ${formatNumber(value)}`}
+                      className={`${cellSize} rounded-sm border border-border/40`}
+                      style={{ backgroundColor: `hsl(var(--primary) / ${alphaFor(value)})` }}
+                    />
+                  ))}
+                </>
+              ))}
+            </div>
           </div>
         )}
       </CardContent>
@@ -235,6 +309,71 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
       .slice(0, 14)
       .reverse();
   }, [recentEvents]);
+
+  const dayHourHeatmap = useMemo<HeatmapData>(() => {
+    const dayKeys = [...new Set(recentEvents.map((event) => new Date(event.timestamp * 1000).toLocaleDateString()))]
+      .slice(0, 14)
+      .reverse();
+
+    const yLabels = Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, '0')}h`);
+    const xIndex = new Map(dayKeys.map((day, index) => [day, index]));
+    const values = Array.from({ length: 24 }, () => Array.from({ length: dayKeys.length }, () => 0));
+
+    recentEvents.forEach((event) => {
+      const date = new Date(event.timestamp * 1000);
+      const day = date.toLocaleDateString();
+      const col = xIndex.get(day);
+      if (col === undefined) return;
+      const hour = date.getHours();
+      values[hour][col] += 1;
+    });
+
+    return {
+      xLabels: dayKeys,
+      yLabels,
+      values,
+    };
+  }, [recentEvents]);
+
+  const userHourHeatmap = useMemo<HeatmapData>(() => {
+    const users = [...new Set(topUsers.map((user) => user.user).filter(Boolean))].slice(0, 10);
+    const hourLabels = Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, '0')}h`);
+    const userIndex = new Map(users.map((name, index) => [name, index]));
+    const values = Array.from({ length: users.length }, () => Array.from({ length: 24 }, () => 0));
+
+    recentEvents.forEach((event) => {
+      const row = userIndex.get(event.user);
+      if (row === undefined) return;
+      const hour = new Date(event.timestamp * 1000).getHours();
+      values[row][hour] += 1;
+    });
+
+    return {
+      xLabels: hourLabels,
+      yLabels: users,
+      values,
+    };
+  }, [recentEvents, topUsers]);
+
+  const featureHourHeatmap = useMemo<HeatmapData>(() => {
+    const features = [...new Set(topFeatures.map((feature) => feature.feature).filter(Boolean))].slice(0, 10);
+    const hourLabels = Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, '0')}h`);
+    const featureIndex = new Map(features.map((feature, index) => [feature, index]));
+    const values = Array.from({ length: features.length }, () => Array.from({ length: 24 }, () => 0));
+
+    recentEvents.forEach((event) => {
+      const row = featureIndex.get(event.command);
+      if (row === undefined) return;
+      const hour = new Date(event.timestamp * 1000).getHours();
+      values[row][hour] += 1;
+    });
+
+    return {
+      xLabels: hourLabels,
+      yLabels: features,
+      values,
+    };
+  }, [recentEvents, topFeatures]);
 
   const userBars = useMemo<BarDatum[]>(() => topUsers.map((entry) => ({
     label: entry.user,
@@ -554,6 +693,29 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        <HeatmapCard
+          title="Heatmap activité globale (jour × heure)"
+          description="Visualise les créneaux les plus actifs sur les événements récents."
+          data={dayHourHeatmap}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <HeatmapCard
+          title="Heatmap utilisateurs (user × heure)"
+          description="Montre quand chaque user envoie le plus d’actions."
+          data={userHourHeatmap}
+          compact
+        />
+        <HeatmapCard
+          title="Heatmap fonctionnalités (feature × heure)"
+          description="Montre les plages horaires d’utilisation de chaque feature."
+          data={featureHourHeatmap}
+          compact
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
