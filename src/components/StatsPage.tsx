@@ -240,14 +240,14 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
 
   const pcBars = useMemo<BarDatum[]>(() => topPcs.map((entry) => ({
     label: entry.machine || entry.hostname || entry.target_id,
-    value: entry.total_requests,
-    hint: `${entry.total_deliveries} livrées`,
+    value: entry.total_deliveries,
+    hint: `${entry.total_requests} demandées`,
   })), [topPcs]);
 
   const hostnameBars = useMemo<BarDatum[]>(() => topHostnames.map((entry) => ({
     label: entry.hostname,
     value: entry.count,
-    hint: 'demandes',
+    hint: 'WS livrées',
   })), [topHostnames]);
 
   return (
@@ -468,13 +468,13 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <HorizontalBarChart
           title="Top PC demandés"
-          description="Quels PC sont les plus demandés par les utilisateurs."
+          description="Quels PC (hostname) reçoivent le plus de messages WebSocket."
           data={pcBars}
           maxItems={10}
         />
         <HorizontalBarChart
           title="Top hostnames demandés"
-          description="Classement des machines par hostname sur les requêtes reçues."
+          description="Classement hostname par volume WS livré."
           data={hostnameBars}
           maxItems={10}
         />
