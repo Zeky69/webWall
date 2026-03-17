@@ -239,7 +239,7 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
   })), [topImages]);
 
   const pcBars = useMemo<BarDatum[]>(() => topPcs.map((entry) => ({
-    label: entry.hostname ? `${entry.hostname} (${entry.target_id})` : entry.target_id,
+    label: entry.machine || entry.hostname || entry.target_id,
     value: entry.total_requests,
     hint: `${entry.total_deliveries} livrées`,
   })), [topPcs]);
@@ -492,7 +492,7 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
             ) : (
               topUserPcPairs.slice(0, 15).map((entry, index) => (
                 <div key={`${entry.user}-${entry.target_id}-${index}`} className="rounded-md border p-3 text-sm flex items-center justify-between gap-3">
-                  <div className="font-medium">#{index + 1} {entry.user} → {entry.target_id}</div>
+                  <div className="font-medium">#{index + 1} {entry.user} → {entry.machine || entry.target_id}</div>
                   <div className="text-muted-foreground">{formatNumber(entry.count)}</div>
                 </div>
               ))
@@ -513,7 +513,7 @@ export function StatsPage({ isAuthenticated }: StatsPageProps) {
                 <div key={`${entry.user}-${entry.target_id}-${index}`} className="rounded-md border p-3 text-sm flex items-center justify-between gap-3">
                   <div>
                     <div className="font-medium">#{index + 1} {entry.user}</div>
-                    <div className="text-xs text-muted-foreground">PC favori: {entry.target_id}</div>
+                    <div className="text-xs text-muted-foreground">PC favori: {entry.machine || entry.target_id}</div>
                   </div>
                   <div className="text-muted-foreground">{formatNumber(entry.count)}</div>
                 </div>

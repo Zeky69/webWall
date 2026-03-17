@@ -53,6 +53,7 @@ export interface FeatureLeaderboardEntry {
 
 export interface FeaturePcLeaderboardEntry {
   target_id: string;
+  machine?: string;
   hostname?: string;
   total_requests: number;
   total_deliveries: number;
@@ -63,12 +64,14 @@ export interface FeaturePcLeaderboardEntry {
 export interface FeatureUserPcPairEntry {
   user: string;
   target_id: string;
+  machine?: string;
   count: number;
 }
 
 export interface FeatureUserFavoritePcEntry {
   user: string;
   target_id: string;
+  machine?: string;
   count: number;
 }
 
