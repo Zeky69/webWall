@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>WallChange — Panel de contrôle</title>
+<meta name="viewport" content="width=1600" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --wc-sans: "Inter", system-ui, sans-serif;
+    --wc-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    /* DARK (default) — inspired by Grafana/Linear dark, neutral slate */
+    --wc-bg: #0b0d10;
+    --wc-panel: #111419;
+    --wc-panel-2: #171b21;
+    --wc-border: #242a31;
+    --wc-fg: #e5e7eb;
+    --wc-fg-2: #c5cad1;
+    --wc-muted: #6b7280;
+    --wc-muted2: #8a909b;
+
+    --wc-accent: #e8b547;   /* amber — main */
+    --wc-accent-soft: #e8b54720;
+    --wc-accent2: #6ea8ff;  /* complementary blue */
+    --wc-ok: #4ade80;
+    --wc-warn: #fbbf24;
+    --wc-err: #f87171;
+  }
+
+  .wc-theme-light {
+    --wc-bg: #f5f3ec;
+    --wc-panel: #ebe8df;
+    --wc-panel-2: #e0dcd0;
+    --wc-border: #c5c3bd;
+    --wc-fg: #1a1a1a;
+    --wc-fg-2: #3a3a3a;
+    --wc-muted: #7a7a76;
+    --wc-muted2: #555550;
+    --wc-accent: #b8860b;
+    --wc-accent-soft: #b8860b22;
+    --wc-accent2: #2563eb;
+    --wc-ok: #16a34a;
+    --wc-warn: #d97706;
+    --wc-err: #dc2626;
+  }
+
+  .wc-theme-crt {
+    --wc-bg: #0a0f04;
+    --wc-panel: #0e1606;
+    --wc-panel-2: #121d0a;
+    --wc-border: #1f3210;
+    --wc-fg: #8fff6a;
+    --wc-fg-2: #6bce4f;
+    --wc-muted: #3a7a28;
+    --wc-muted2: #4e9c37;
+    --wc-accent: #ffcc00;
+    --wc-accent-soft: #ffcc0033;
+    --wc-accent2: #00d9ff;
+    --wc-ok: #5eff3a;
+    --wc-warn: #ffcc00;
+    --wc-err: #ff5a3a;
+    --wc-sans: "JetBrains Mono", ui-monospace, monospace;
+  }
+  .wc-theme-crt .wc-root {
+    text-shadow: 0 0 2px var(--wc-fg);
+  }
+  .wc-theme-crt .wc-root::after {
+    content: ""; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0 1px, transparent 1px 3px);
+    pointer-events: none; z-index: 999;
+  }
+
+  html, body { margin: 0; padding: 0; background: #0b0d10; color-scheme: dark; }
+  body { font-family: var(--wc-sans); }
+  * { box-sizing: border-box; }
+  button { font-family: inherit; }
+  input { font-family: inherit; }
+
+  @keyframes wc-pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  @keyframes wc-scan {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+  @keyframes wc-blink {
+    50% { opacity: 0; }
+  }
+  @keyframes wc-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  @keyframes wc-sweep {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .wc-root { position: relative; overflow: hidden; }
+
+  /* Tweaks panel */
+  .tweaks-panel {
+    position: fixed; bottom: 16px; right: 16px; z-index: 10000;
+    background: #0b0d10; color: #e5e7eb;
+    border: 1px solid #242a31; padding: 14px 16px;
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    min-width: 220px; display: none;
+  }
+  .tweaks-panel.open { display: block; }
+  .tweaks-panel h4 { margin: 0 0 10px 0; font-size: 10px; letter-spacing: 0.1em; color: #e8b547; text-transform: uppercase; }
+  .tweaks-panel .row { margin-bottom: 8px; }
+  .tweaks-panel label { color: #8a909b; display: block; margin-bottom: 4px; font-size: 10px; text-transform: uppercase; }
+  .tweaks-panel .seg { display: flex; gap: 0; border: 1px solid #242a31; }
+  .tweaks-panel .seg button { flex: 1; background: transparent; color: #c5cad1; border: none; padding: 6px 8px; cursor: pointer; font-family: inherit; font-size: 10px; }
+  .tweaks-panel .seg button.active { background: #e8b547; color: #0b0d10; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<div class="tweaks-panel" id="tweaks">
+  <h4>⚙ Tweaks</h4>
+  <div class="row">
+    <label>Thème</label>
+    <div class="seg" id="theme-seg">
+      <button data-theme="dark" class="active">Dark</button>
+      <button data-theme="light">Light</button>
+      <button data-theme="crt">CRT</button>
+    </div>
+  </div>
+  <div style="font-size: 9px; color: #6b7280; margin-top: 12px;">Active Tweaks from toolbar ✦</div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="primitives.jsx"></script>
+<script type="text/babel" src="v1-command-center.jsx"></script>
+<script type="text/babel" src="v2-terminal-grid.jsx"></script>
+<script type="text/babel" src="v3-constellation.jsx"></script>
+<script type="text/babel" src="v4-timeline.jsx"></script>
+
+<script type="text/babel">
+  const TWEAKS = /*EDITMODE-BEGIN*/{
+    "theme": "dark"
+  }/*EDITMODE-END*/;
+
+  const App = () => {
+    const [theme, setTheme] = React.useState(TWEAKS.theme);
+
+    React.useEffect(() => {
+      document.body.className = `wc-theme-${theme}`;
+    }, [theme]);
+
+    // Tweaks wiring
+    React.useEffect(() => {
+      const panel = document.getElementById('tweaks');
+      const handler = (e) => {
+        if (e.data?.type === '__activate_edit_mode') panel.classList.add('open');
+        if (e.data?.type === '__deactivate_edit_mode') panel.classList.remove('open');
+      };
+      window.addEventListener('message', handler);
+      window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+
+      // Wire theme buttons
+      document.querySelectorAll('#theme-seg button').forEach(b => {
+        b.onclick = () => {
+          const t = b.dataset.theme;
+          setTheme(t);
+          document.querySelectorAll('#theme-seg button').forEach(x => x.classList.toggle('active', x === b));
+          window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { theme: t } }, '*');
+        };
+      });
+
+      return () => window.removeEventListener('message', handler);
+    }, []);
+
+    return (
+      <DesignCanvas title="WallChange — Panel de contrôle" subtitle="4 variations · console pro dense · admin système distante">
+        <DCSection id="dashboards" title="Panels de pilotage">
+          <DCArtboard id="v1" label="V1 · Command Center — dashboard dense, stats + clients + logs" width={1600} height={1000}>
+            <V1CommandCenter />
+          </DCArtboard>
+          <DCArtboard id="v2" label="V2 · Terminal Grid — tmux split-panes, reverse shell + captures live" width={1600} height={1000}>
+            <V2TerminalGrid />
+          </DCArtboard>
+          <DCArtboard id="v3" label="V3 · Constellation — topologie radar, broadcast visuel" width={1600} height={1000}>
+            <V3Constellation />
+          </DCArtboard>
+          <DCArtboard id="v4" label="V4 · Timeline Ops — journal chrono, swim lanes par agent" width={1600} height={1000}>
+            <V4TimelineOps />
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+    );
+  };
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>
